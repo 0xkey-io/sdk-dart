@@ -1,0 +1,521 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:app_links/app_links.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:zeroxkey_api_key_stamper/zeroxkey_api_key_stamper.dart';
+import 'package:zeroxkey_core/zeroxkey_core.dart'
+    hide TimeoutException, SignatureFormat, AuthAction;
+import 'package:zeroxkey_passkey_stamper/zeroxkey_passkey_stamper.dart';
+import 'package:zeroxkey_http/zeroxkey_http.dart';
+import 'package:zeroxkey_sdk_flutter/src/internal/zeroxkey_helpers.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:zeroxkey_sdk_flutter/src/utils/constants.dart';
+import 'package:zeroxkey_sdk_flutter/src/utils/types.dart';
+import 'package:uuid/uuid.dart';
+
+import 'package:zeroxkey_sdk_flutter/src/internal/stamper.dart';
+import 'package:zeroxkey_sdk_flutter/src/internal/storage.dart';
+import 'package:zeroxkey_sdk_flutter/src/internal/hive_session_store.dart';
+import 'package:zeroxkey_sdk_flutter/src/internal/oauth_redirect_handler.dart';
+import 'package:crypto/crypto.dart';
+
+part 'zeroxkey_auth_proxy.dart';
+part 'zeroxkey_delegated_access.dart';
+part 'zeroxkey_oauth.dart';
+part 'zeroxkey_passkey.dart';
+part 'zeroxkey_session.dart';
+part 'zeroxkey_signing.dart';
+part 'zeroxkey_user.dart';
+part 'zeroxkey_wallet.dart';
+
+class ZeroXKeyProvider with ChangeNotifier {
+  // these are external
+  Session? _session;
+  ZeroXKeyClient? _client;
+  v1User? _user;
+  List<Wallet>? _wallets;
+  AuthState _authState = AuthState.loading;
+
+  // these are internal
+  ZeroXKeyRuntimeConfig? _runtimeConfig;
+
+  // immutable
+  final ZeroXKeyConfig config;
+  final SecureStorageStamper secureStorageStamper = SecureStorageStamper();
+  final Map<String, Timer> expiryTimers = {};
+
+  /// Session persistence via the core [SessionStore] port (Hive-backed).
+  final SessionStore _sessionStore = const HiveSessionStore();
+
+  /// Composition root: owns the decorated transport (tracing/retry/timeout) and
+  /// the repository/use-case graph that the public API delegates to.
+  late final ZeroXKeyContainer _container;
+
+  final Completer<void> _initCompleter = Completer<void>();
+  Future<void> get ready => _initCompleter.future;
+
+  ZeroXKeyProvider({required this.config}) {
+    _container = ZeroXKeyContainer(
+      configuration: _mapConfiguration(),
+      clientResolver: () => requireClient,
+      signer: secureStorageStamper,
+      keyStore: const SecureStorageKeyStore(),
+    );
+    _init();
+  }
+
+  /// Maps the Flutter-facing [config] into the decoupled core configuration.
+  ZeroXKeyConfiguration _mapConfiguration() {
+    return ZeroXKeyConfiguration(
+      backend: ZeroXKeyBackendProvider(
+        apiBaseUrl: config.apiBaseUrl ?? 'https://api.0xkey.io',
+        authProxyBaseUrl:
+            config.authProxyBaseUrl ?? 'https://authproxy.0xkey.io',
+        authProxyConfigId: config.authProxyConfigId,
+        organizationId: config.organizationId,
+      ),
+    );
+  }
+
+  // these are externally used
+  Session? get session => _session;
+  AuthState get authState => _authState;
+  ZeroXKeyClient? get client => _client;
+  v1User? get user => _user;
+  List<Wallet>? get wallets => _wallets;
+
+  // these are internally used
+  ZeroXKeyRuntimeConfig? get runtimeConfig => _runtimeConfig;
+
+  // helper to get client or throw
+  ZeroXKeyClient get requireClient {
+    if (client == null) {
+      throw StateError(
+        'ZeroXKeyClient is not initialized. Make sure you have an active session '
+        'and that `_client` was properly set before calling this method.',
+      );
+    }
+    return client!;
+  }
+
+  // here we have setters that notify listeners
+  // we do this for external properties only
+  set session(Session? newSession) {
+    _session = newSession;
+    notifyListeners();
+  }
+
+  set authState(AuthState next) {
+    if (_authState == next) return;
+    _authState = next;
+    notifyListeners();
+  }
+
+  set client(ZeroXKeyClient? newClient) {
+    _client = newClient;
+    notifyListeners();
+  }
+
+  set user(v1User? newUser) {
+    _user = newUser;
+    notifyListeners();
+  }
+
+  set wallets(List<Wallet>? newWallets) {
+    _wallets = newWallets;
+    notifyListeners();
+  }
+
+  Future<void> _init() async {
+    await _boot();
+    await HiveSessionStore.ensureInitialized();
+    await _initializeSessions();
+  }
+
+  ZeroXKeyRuntimeConfig _buildConfig({
+    ProxyTGetWalletKitConfigResponse? proxyAuthConfig,
+  }) {
+    String? _resolveRedirect(String? local) {
+      if (local != null && local.isNotEmpty) return local;
+      return proxyAuthConfig?.oauthRedirectUrl;
+    }
+
+    // --- per-provider OAuth resolution ----------------------------------------
+    final userProviders = config.authConfig?.oAuthConfig?.providers;
+    final proxyClientIds = proxyAuthConfig?.oauthClientIds ?? const {};
+    final redirectBase =
+        proxyAuthConfig?.oauthRedirectUrl ?? ZEROXKEY_OAUTH_REDIRECT_URL;
+    final scheme = config.appScheme;
+
+    String? resolveClientId(String? local, String proxyKey) =>
+        (local != null && local.isNotEmpty) ? local : proxyClientIds[proxyKey];
+
+    String baseUrlFallback() =>
+        '$redirectBase?scheme=${Uri.encodeComponent(scheme ?? '')}';
+    String schemeFallback() =>
+        (scheme != null && scheme.isNotEmpty) ? '$scheme://' : '';
+    String resolvePerProviderRedirect(
+            String? perProvider, String Function() fallback) =>
+        (perProvider != null && perProvider.isNotEmpty)
+            ? perProvider
+            : fallback();
+
+    final resolvedGoogle = GoogleOAuthProviderParams(
+      primaryClientId: GoogleOAuthPrimaryClientId(
+        webClientId: resolveClientId(
+            userProviders?.google?.primaryClientId?.webClientId, 'google'),
+      ),
+      secondaryClientIds: userProviders?.google?.secondaryClientIds,
+      redirectUri: resolvePerProviderRedirect(
+          userProviders?.google?.redirectUri, baseUrlFallback),
+    );
+
+    final resolvedApple = AppleOAuthProviderParams(
+      primaryClientId: AppleOAuthPrimaryClientId(
+        serviceId: resolveClientId(
+            userProviders?.apple?.primaryClientId?.serviceId, 'apple'),
+        iosBundleId: userProviders?.apple?.primaryClientId?.iosBundleId,
+      ),
+      secondaryClientIds: userProviders?.apple?.secondaryClientIds,
+      redirectUri: resolvePerProviderRedirect(
+          userProviders?.apple?.redirectUri, baseUrlFallback),
+    );
+
+    final resolvedX = XOAuthProviderParams(
+      primaryClientId: resolveClientId(userProviders?.x?.primaryClientId, 'x'),
+      secondaryClientIds: userProviders?.x?.secondaryClientIds,
+      redirectUri: resolvePerProviderRedirect(
+          userProviders?.x?.redirectUri, schemeFallback),
+    );
+
+    final resolvedDiscord = DiscordOAuthProviderParams(
+      primaryClientId:
+          resolveClientId(userProviders?.discord?.primaryClientId, 'discord'),
+      secondaryClientIds: userProviders?.discord?.secondaryClientIds,
+      redirectUri: resolvePerProviderRedirect(
+          userProviders?.discord?.redirectUri, schemeFallback),
+    );
+
+    final resolvedOAuth = OAuthConfig(
+      oauthRedirectUri:
+          _resolveRedirect(config.authConfig?.oAuthConfig?.oauthRedirectUri),
+      providers: OAuthProviders(
+        google: resolvedGoogle,
+        apple: resolvedApple,
+        x: resolvedX,
+        discord: resolvedDiscord,
+      ),
+    );
+
+    // --- proxy-only settings (read from proxy when available) ------------------
+    final sessionExpirationSeconds =
+        proxyAuthConfig?.sessionExpirationSeconds ??
+            AUTH_DEFAULT_EXPIRATION_SECONDS;
+
+    final otpAlphanumeric = proxyAuthConfig?.otpAlphanumeric;
+
+    final otpLength = proxyAuthConfig?.otpLength;
+
+    final resolvedAuth = RuntimeAuthConfig(
+      oAuthConfig: resolvedOAuth,
+      sessionExpirationSeconds: sessionExpirationSeconds,
+      otpAlphanumeric: otpAlphanumeric,
+      otpLength: otpLength,
+      autoFetchWalletKitConfig:
+          config.authConfig?.autoFetchWalletKitConfig ?? true,
+      autoRefreshManagedState:
+          config.authConfig?.autoRefreshManagedState ?? true,
+    );
+
+    // Note: it's not always possible to use runtimeConfig to get base urls. You'll notice in functions like createClient, we do this logic again. runtimeConfig is only available after boot so it's not safe to use it there.
+    final resolvedApiBaseUrl = config.apiBaseUrl ?? "https://api.0xkey.io";
+    final resolvedAuthProxyBaseUrl =
+        config.authProxyBaseUrl ?? "https://authproxy.0xkey.io";
+
+    return ZeroXKeyRuntimeConfig(
+      apiBaseUrl: resolvedApiBaseUrl,
+      organizationId: config.organizationId,
+      appScheme: config.appScheme,
+      authConfig: resolvedAuth,
+      passkeyConfig: config.passkeyConfig,
+      authProxyBaseUrl: resolvedAuthProxyBaseUrl,
+      authProxyConfigId: config.authProxyConfigId,
+      onSessionCreated: config.onSessionCreated,
+      onSessionSelected: config.onSessionSelected,
+      onSessionExpired: config.onSessionExpired,
+      onSessionCleared: config.onSessionCleared,
+      onSessionRefreshed: config.onSessionRefreshed,
+      onSessionEmpty: config.onSessionEmpty,
+      onInitialized: config.onInitialized,
+    );
+  }
+
+  Future<void> _boot() async {
+    try {
+      authState = AuthState.loading;
+      ProxyTGetWalletKitConfigResponse? proxy;
+      if ((config.authProxyConfigId ?? '').isNotEmpty &&
+          config.authConfig?.autoFetchWalletKitConfig == true) {
+        proxy = await _getAuthProxyConfig(
+          config.authProxyConfigId!,
+          config.authProxyBaseUrl,
+        );
+        notifyListeners();
+      }
+
+      // we build the runtime config from Authproxy (can be null)
+      _runtimeConfig = _buildConfig(proxyAuthConfig: proxy);
+      notifyListeners();
+    } catch (e) {
+      stderr.writeln("ZeroXKeyProvider boot failed: $e");
+    }
+  }
+
+  Future<ProxyTGetWalletKitConfigResponse?> _getAuthProxyConfig(
+      String configId, String? baseUrl) async {
+    if (client == null) {
+      createClient(
+        authProxyConfigId: configId,
+        authProxyBaseUrl: baseUrl,
+      );
+    }
+
+    return await requireClient.proxyGetWalletKitConfig(
+      input: ProxyTGetWalletKitConfigBody(),
+    );
+  }
+
+  /// Creates a new ZeroXKeyClient instance using the provided parameters.
+  ///
+  /// [organizationId] The ID of the organization to which the client will be associated.
+  /// [publicKey] The public key to use for stamping. A key pair with this public key must exist in secure storage before passing it here. You can ensure the key pair exists using the createApiKeyPair method. If null, the existing public key in the stamper will be used.
+  /// [apiBaseUrl] The base URL for the ZeroXKey API. If null, the value from the config or the default URL will be used.
+  /// [authProxyConfigId] The configuration ID for the auth proxy. If null, the value from the config will be used.
+  /// [authProxyBaseUrl] The base URL for the auth proxy. If null, the value from the config or the default URL will be used.
+  /// [overrideExisting] Whether to override the existing client instance with the newly created one. Defaults to true.
+  /// Returns the newly created ZeroXKeyClient instance.
+  ZeroXKeyClient createClient(
+      {String? organizationId,
+      String? publicKey,
+      String? apiBaseUrl,
+      String? authProxyConfigId,
+      String? authProxyBaseUrl,
+      bool? overrideExisting = true}) {
+    if (publicKey != null) secureStorageStamper.setPublicKey(publicKey);
+    apiBaseUrl ??= runtimeConfig?.apiBaseUrl ?? "https://api.0xkey.io";
+    authProxyBaseUrl ??=
+        runtimeConfig?.authProxyBaseUrl ?? "https://authproxy.0xkey.io";
+    authProxyConfigId ??= runtimeConfig?.authProxyConfigId;
+    organizationId ??= runtimeConfig?.organizationId;
+
+    final newClient = ZeroXKeyClient(
+      config: THttpConfig(
+        organizationId: organizationId,
+        baseUrl: apiBaseUrl,
+        authProxyConfigId: authProxyConfigId,
+        authProxyBaseUrl: authProxyBaseUrl,
+      ),
+      stamper: secureStorageStamper,
+      transport: _container.transport,
+    );
+
+    if (overrideExisting == true) client = newClient;
+
+    return newClient;
+  }
+
+  /// Creates a ZeroXKeyClient configured for Passkey stamping.
+  /// [organizationId] The ID of the organization to which the client will be associated. If null, the value from the config will be used.
+  /// [apiBaseUrl] The base URL for the ZeroXKey API. If null, the value from the config or the default URL will be used.
+  /// [authProxyConfigId] The configuration ID for the auth proxy. If null, the value from the config will be used.
+  /// [authProxyBaseUrl] The base URL for the auth proxy. If null, the value from the config or the default URL will be used.
+  /// [rpId] The Relying Party ID to use for Passkey authentication. If null, the value from the config's PasskeyStamperConfig will be used.
+  /// [overrideExisting] Whether to override the existing client instance with the newly created one. If true, all helper functions within the ZeroXKeyProvider will be using this client and thus, will be stamping using a passkey. Defaults to false.
+  /// Returns the newly created ZeroXKeyClient instance configured for Passkey stamping.
+  ZeroXKeyClient createPasskeyClient(
+      {String? organizationId,
+      String? apiBaseUrl,
+      String? authProxyConfigId,
+      String? authProxyBaseUrl,
+      PasskeyStamperConfig? passkeyStamperConfig,
+      bool? overrideExisting = false}) {
+    final rpId =
+        passkeyStamperConfig?.rpId ?? runtimeConfig?.passkeyConfig?.rpId;
+    if (rpId == null || rpId.isEmpty) {
+      throw Exception(
+        'Relying Party ID (rpId) must be provided either in the passkeyStamperConfig parameter or in the ZeroXKeyConfig.passkeyConfig property.',
+      );
+    }
+
+    apiBaseUrl ??= runtimeConfig?.apiBaseUrl ?? "https://api.0xkey.io";
+    authProxyBaseUrl ??=
+        runtimeConfig?.authProxyBaseUrl ?? "https://authproxy.0xkey.io";
+    authProxyConfigId ??= runtimeConfig?.authProxyConfigId;
+    organizationId ??= runtimeConfig?.organizationId;
+
+    final passkeyStamper = PasskeyStamper(
+      passkeyStamperConfig != null
+          ? PasskeyStamperConfig(
+              rpId: rpId,
+              timeout: passkeyStamperConfig.timeout,
+              userVerification: passkeyStamperConfig.userVerification,
+              allowCredentials: passkeyStamperConfig.allowCredentials,
+              mediation: passkeyStamperConfig.mediation,
+              preferImmediatelyAvailableCredentials:
+                  passkeyStamperConfig.preferImmediatelyAvailableCredentials,
+            )
+          : PasskeyStamperConfig(rpId: rpId),
+    );
+
+    final passkeyClient = ZeroXKeyClient(
+        config: THttpConfig(
+          organizationId: organizationId,
+          baseUrl: apiBaseUrl,
+          authProxyConfigId: authProxyConfigId,
+          authProxyBaseUrl: authProxyBaseUrl,
+        ),
+        stamper: passkeyStamper,
+        transport: _container.transport);
+
+    if (overrideExisting == true) client = passkeyClient;
+
+    return passkeyClient;
+  }
+
+  /// Initializes stored sessions on mount.
+  ///
+  /// This function retrieves all stored session keys, validates their expiration status,
+  /// removes expired sessions, and schedules expiration timers for active ones.
+  /// Additionally, it loads the last selected session if it is still valid,
+  /// otherwise it clears the session and triggers the session expiration callback.
+  Future<void> _initializeSessions() async {
+    // Reset current state
+    session = null;
+
+    try {
+      createClient();
+
+      // we get all stored sessions
+      final allSessions = await getAllSessions();
+      if (allSessions == null || allSessions.isEmpty) {
+        runtimeConfig?.onSessionEmpty?.call();
+        authState = AuthState.unauthenticated;
+
+        _initCompleter.complete();
+        return;
+      }
+
+      // we iterate over all sessions and clean up expired ones
+      for (final sessionKey in List<String>.from(allSessions.keys)) {
+        final s = allSessions[sessionKey];
+
+        if (s == null) continue;
+
+        if (!isValidSession(s)) {
+          await clearSession(sessionKey: sessionKey);
+
+          allSessions.remove(sessionKey);
+          continue;
+        }
+
+        await _scheduleSessionExpiration(sessionKey, s.expiry);
+      }
+
+      // we load the active session key (if it exists)
+      final activeSessionKey = await getActiveSessionKey();
+      if (activeSessionKey != null) {
+        final activeSession = allSessions[activeSessionKey];
+        if (activeSession != null) {
+          session = activeSession;
+          createClient(
+            publicKey: activeSession.publicKey,
+            organizationId: activeSession.organizationId,
+          );
+          session = activeSession;
+
+          // We have a valid session + client: mark authenticated before fetching user/wallets.
+          authState = AuthState.authenticated;
+
+          await refreshUser();
+          await refreshWallets();
+
+          runtimeConfig?.onSessionSelected?.call(activeSession);
+        }
+      } else {
+        // if no active session, fire the empty callback
+        runtimeConfig?.onSessionEmpty?.call();
+        authState = AuthState.unauthenticated;
+      }
+
+      // we signal initialization complete
+      _initCompleter.complete();
+      runtimeConfig?.onInitialized?.call(null);
+    } catch (e, st) {
+      stderr.writeln("ZeroXKeyProvider failed to initialize sessions: $e\n$st");
+      authState = AuthState.unauthenticated;
+      _initCompleter.completeError(e, st);
+      runtimeConfig?.onInitialized?.call(e);
+    }
+  }
+
+  /// Creates a new API key pair and optionally stores it as the active key.
+  /// If `storeOverride` is true, the new key pair will replace the current active key in the client.
+  ///
+  /// [externalPublicKey] The external public key to use for the key pair. If null, a new key will be generated.
+  /// [externalPrivateKey] The external private key to use for the key pair. If null, a new key will be generated.
+  /// [isCompressed] Whether to create a key pair off of a compressed key pair. Defaults to true.
+  /// [storeOverride] Whether to store the new key pair as the active key. Defaults to false.
+  /// Returns the public key of the created key pair.
+  Future<String> createApiKeyPair({
+    String? externalPublicKey,
+    String? externalPrivateKey,
+    bool isCompressed = true,
+    bool storeOverride = false,
+  }) async {
+    final publicKey = await SecureStorageStamper.createKeyPair(
+      externalPublicKey: externalPublicKey,
+      externalPrivateKey: externalPrivateKey,
+      isCompressed: isCompressed,
+    );
+
+    // if `storeOverride` is true, we set the new key as the active key for this client instance
+    if (storeOverride) {
+      createClient(
+        publicKey: publicKey,
+      );
+    }
+
+    return publicKey;
+  }
+
+  /// Deletes an API key pair from secure storage by its public key.
+  /// [publicKey] The public key of the key pair to delete.
+  Future<void> deleteApiKeyPair(String publicKey) async {
+    await SecureStorageStamper.deleteKeyPair(publicKey);
+  }
+
+  /// Clears any key pairs that are not associated with an active session.
+  Future<void> deleteUnusedKeyPairs() async {
+    final publicKeys = await SecureStorageStamper.listKeyPairs();
+    if (publicKeys.isEmpty) return;
+
+    final sessionKeys = await SessionStorageManager.listSessionKeys();
+    final activePublicKeys = <String>{};
+
+    for (final key in sessionKeys) {
+      final session = await SessionStorageManager.getSession(key);
+      if (session != null) {
+        activePublicKeys.add(session.publicKey);
+      }
+    }
+
+    for (final pk in publicKeys) {
+      if (!activePublicKeys.contains(pk)) {
+        await SecureStorageStamper.deleteKeyPair(pk);
+      }
+    }
+  }
+}

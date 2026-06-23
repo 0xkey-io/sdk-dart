@@ -1,0 +1,126 @@
+name: publish
+
+# Guarded pub.dev publishing: publishing is a deliberate, approved act, never an
+# automatic tag-push side effect.
+#
+# How it runs:
+#   - Dispatched per package against a `{package_name}-{version}` tag, e.g.
+#     `gh workflow run publish.yml --ref zeroxkey_http-2.0.0`
+#     (this is exactly what tool/push_package_tags.dart does), and
+#   - gated by a manual approval on the `pub-dev` GitHub environment.
+#
+# Auth: pub.dev OIDC — no long-lived token. One-time setup per package on
+# pub.dev (Admin tab → Automated publishing → Enable publishing from GitHub
+# Actions):
+#   - Repository:   0xkey-io/sdk-dart
+#   - Tag pattern:  {{package}}-{{version}}
+#   - Require GitHub Actions environment: pub-dev
+#
+# Bootstrap note: a package's *first* version must be published manually by a
+# pub.dev uploader (OIDC cannot be enabled until the package exists). Publish in
+# dependency order: encoding → crypto → api_key/passkey stamper → http → core →
+# sdk_flutter. Afterwards this workflow handles subsequent releases.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Validate only (pub publish --dry-run); do not publish"
+        required: false
+        type: boolean
+        default: false
+
+# OIDC token exchange with pub.dev requires id-token: write.
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Manual-approval gate; also bind this environment in the pub.dev config.
+    environment: pub-dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Resolve target package from tag
+        id: resolve
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF}" != refs/tags/* ]]; then
+            echo "::error::publish.yml must be dispatched against a tag ref (got ${GITHUB_REF}). Use: gh workflow run publish.yml --ref <package_name>-<version>"
+            exit 1
+          fi
+          tag="${GITHUB_REF_NAME}"
+          echo "Tag: $tag"
+          if [[ ! "$tag" =~ ^(.+)-([0-9]+\.[0-9]+\.[0-9]+.*)$ ]]; then
+            echo "::error::Tag '$tag' is not in the expected {package_name}-{version} format."
+            exit 1
+          fi
+          pkg="${BASH_REMATCH[1]}"
+          ver="${BASH_REMATCH[2]}"
+          dir=""
+          for pubspec in packages/*/pubspec.yaml; do
+            name="$(grep -E '^name:' "$pubspec" | head -n1 | sed -E 's/^name:[[:space:]]*//')"
+            if [[ "$name" == "$pkg" ]]; then
+              dir="$(dirname "$pubspec")"
+              break
+            fi
+          done
+          if [[ -z "$dir" ]]; then
+            echo "::error::No package named '$pkg' found under packages/."
+            exit 1
+          fi
+          declared="$(grep -E '^version:' "$dir/pubspec.yaml" | head -n1 | sed -E 's/^version:[[:space:]]*//')"
+          if [[ "$declared" != "$ver" ]]; then
+            echo "::error::Tag version '$ver' != $dir/pubspec.yaml version '$declared'."
+            exit 1
+          fi
+          echo "package=$pkg" >> "$GITHUB_OUTPUT"
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          echo "Resolved $pkg $ver -> $dir"
+
+      - name: Skip if version already on pub.dev
+        id: exists
+        run: |
+          set -euo pipefail
+          pkg="${{ steps.resolve.outputs.package }}"
+          ver="${{ steps.resolve.outputs.version }}"
+          body="$(curl -fsSL "https://pub.dev/api/packages/$pkg" 2>/dev/null || true)"
+          if [[ -z "$body" ]]; then
+            echo "Package $pkg not on pub.dev yet (first publish)."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if echo "$body" | grep -q "\"version\":\"$ver\""; then
+            echo "::notice::$pkg@$ver already published; skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Flutter
+        if: steps.exists.outputs.skip != 'true'
+        uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
+        with:
+          channel: stable
+          flutter-version: "3.44.0"
+          cache: true
+
+      - name: Install dependencies
+        if: steps.exists.outputs.skip != 'true'
+        run: flutter pub get
+
+      - name: Publish (dry run)
+        if: steps.exists.outputs.skip != 'true'
+        working-directory: ${{ steps.resolve.outputs.dir }}
+        run: flutter pub publish --dry-run
+
+      - name: Publish to pub.dev
+        if: steps.exists.outputs.skip != 'true' && inputs.dry_run != true
+        working-directory: ${{ steps.resolve.outputs.dir }}
+        run: flutter pub publish --force

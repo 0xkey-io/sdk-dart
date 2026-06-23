@@ -1,0 +1,27 @@
+name: zeroxkey_oss
+description: Public monorepo for ZeroXKey SDK & API
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+workspace:
+  # packages
+  - packages/api-key-stamper
+  - packages/core
+  - packages/crypto
+  - packages/encoding
+  - packages/http
+  - packages/passkey-stamper
+  - packages/sdk-flutter
+
+  # examples
+  - examples/flutter-demo-app
+
+dev_dependencies:
+  melos: 7.1.1
+
+scripts:
+  test: melos exec -- dart test
+  test:flutter: melos exec -- flutter test

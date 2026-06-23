@@ -1,0 +1,175 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:zeroxkey_flutter_demo_app/screens/login.dart';
+import 'package:zeroxkey_sdk_flutter/zeroxkey_sdk_flutter.dart';
+
+import 'config.dart';
+import 'screens/dashboard.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await loadEnv();
+
+  void onSessionSelected(Session session) {
+    if (isValidSession(session)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        navigatorKey.currentState?.pushReplacement(
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+        final ctx = navigatorKey.currentContext;
+        if (ctx != null) {
+          ScaffoldMessenger.of(ctx).showSnackBar(
+            const SnackBar(
+              content: Text('Logged in! Redirecting to the dashboard.'),
+            ),
+          );
+        }
+      });
+    }
+  }
+
+  void onSessionCleared(Session session) {
+    navigatorKey.currentState?.pushReplacementNamed('/');
+    final ctx = navigatorKey.currentContext;
+    if (ctx != null) {
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        const SnackBar(
+          content: Text('Logged out. Please login again.'),
+        ),
+      );
+    }
+  }
+
+  final createSubOrgParams = CreateSubOrgParams(
+    customWallet: CustomWallet(
+      walletName: 'Wallet 1',
+      walletAccounts: [
+        v1WalletAccountParams(
+          addressFormat: v1AddressFormat.address_format_ethereum,
+          path: "m/44'/60'/0'/0/0",
+          curve: v1Curve.curve_secp256k1,
+          pathFormat: v1PathFormat.path_format_bip32,
+        ),
+        v1WalletAccountParams(
+          addressFormat: v1AddressFormat.address_format_solana,
+          path: "m/44'/501'/0'/0'",
+          curve: v1Curve.curve_ed25519,
+          pathFormat: v1PathFormat.path_format_bip32,
+        ),
+      ],
+    ),
+  );
+
+  final zeroxkeyProvider = ZeroXKeyProvider(
+    config: ZeroXKeyConfig(
+      apiBaseUrl: EnvConfig.zeroxkeyApiUrl,
+      authProxyBaseUrl: EnvConfig.authProxyUrl,
+      authProxyConfigId: EnvConfig.authProxyConfigId,
+      organizationId: EnvConfig.organizationId,
+      appScheme: EnvConfig.appScheme,
+      authConfig: AuthConfig(
+        createSubOrgParams: MethodCreateSubOrgParams(
+          emailOtpAuth: createSubOrgParams,
+          smsOtpAuth: createSubOrgParams,
+          oAuth: createSubOrgParams,
+          passkeyAuth: createSubOrgParams,
+        ),
+        oAuthConfig: OAuthConfig(
+          providers: OAuthProviders(
+            google: GoogleOAuthProviderParams(
+              primaryClientId: GoogleOAuthPrimaryClientId(
+                webClientId: EnvConfig.googleClientId,
+              ),
+            ),
+            apple: AppleOAuthProviderParams(
+              primaryClientId: AppleOAuthPrimaryClientId(
+                serviceId: EnvConfig.appleClientId,
+                // For cross-platform Apple Sign-In compatibility, set
+                // iosBundleId to the iOS app's bundle identifier so signups
+                // via web/Android register the iOS native audience too.
+                // iosBundleId: 'com.example.yourApp',
+              ),
+            ),
+            x: XOAuthProviderParams(primaryClientId: EnvConfig.xClientId),
+            discord: DiscordOAuthProviderParams(
+                primaryClientId: EnvConfig.discordClientId),
+          ),
+        ),
+      ),
+      onSessionSelected: onSessionSelected,
+      onSessionCleared: onSessionCleared,
+    ),
+  );
+
+  zeroxkeyProvider.ready.catchError((error) {
+    debugPrint('Caught from .ready: $error');
+
+    // Schedule the snackbar to show after the current frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final state = navigatorKey.currentState;
+      if (state != null && state.mounted) {
+        ScaffoldMessenger.of(state.context).showSnackBar(
+          SnackBar(
+              content: Text('Error during ZeroXKey initialization: $error')),
+        );
+      }
+    });
+  });
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => zeroxkeyProvider,
+      child: const MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ZeroXKeyProvider>(
+      builder: (context, zeroxkey, _) {
+        return MaterialApp(
+          navigatorKey: navigatorKey,
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color.fromARGB(255, 0, 26, 255),
+            ),
+            useMaterial3: true,
+          ),
+          home: _buildHome(zeroxkey),
+        );
+      },
+    );
+  }
+
+  Widget _buildHome(ZeroXKeyProvider zeroxkey) {
+    switch (zeroxkey.authState) {
+      case AuthState.loading:
+        // Provider is booting: show splash / spinner.
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+
+      case AuthState.unauthenticated:
+        // ZeroXKey is ready. Show the login screen.
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('ZeroXKey Flutter Demo App'),
+          ),
+          body: LoginScreen(),
+        );
+      // We'll have the `onSessionSelected` callback navigate to the dashboard screen. You can also add another case here for AuthState.authenticated if you want to handle it directly.
+      case AuthState.authenticated:
+        // Provider is booting: show splash / spinner.
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+    }
+  }
+}

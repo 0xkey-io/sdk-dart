@@ -1,0 +1,31 @@
+name: zeroxkey_sdk_flutter
+description: A complete SDK for building Flutter apps with ZeroXKey's packages
+version: 0.1.1
+repository: https://github.com/0xkey-io/sdk-dart
+
+environment:
+  sdk: ^3.6.1
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^9.2.4
+  sign_in_with_apple: ^8.0.0
+  zeroxkey_core: ^0.1.1
+  zeroxkey_crypto: ^0.1.0
+  zeroxkey_encoding: ^0.1.0
+  zeroxkey_passkey_stamper: ^0.1.0
+  zeroxkey_api_key_stamper: ^0.1.0
+  zeroxkey_http: ^0.1.0
+  app_links: ^6.3.3
+  flutter_inappwebview: ^6.1.5
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  uuid: ^4.4.0
+  crypto: ^3.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

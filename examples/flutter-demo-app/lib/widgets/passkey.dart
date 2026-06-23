@@ -1,0 +1,95 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:zeroxkey_flutter_demo_app/config.dart';
+import 'package:zeroxkey_flutter_demo_app/widgets/buttons.dart';
+import 'package:zeroxkey_sdk_flutter/zeroxkey_sdk_flutter.dart';
+
+class PasskeyInput extends StatefulWidget {
+  const PasskeyInput({super.key});
+
+  @override
+  PasskeyInputState createState() => PasskeyInputState();
+}
+
+class PasskeyInputState extends State<PasskeyInput> {
+  bool _isSignUpLoading = false;
+  bool _isLoginLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final zeroxkeyProvider =
+        Provider.of<ZeroXKeyProvider>(context, listen: false);
+
+    return Column(
+      children: <Widget>[
+        SizedBox(
+          width: double.infinity,
+          child: LoadingButton(
+            isLoading: _isLoginLoading,
+            onPressed: () async {
+              if (_isLoginLoading) return;
+
+              setState(() => _isLoginLoading = true);
+
+              try {
+                await zeroxkeyProvider.loginWithPasskey(rpId: EnvConfig.rpId);
+
+                if (!context.mounted) return;
+              } catch (e) {
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Passkey login failed: $e')),
+                );
+              } finally {
+                setState(() => _isLoginLoading = false);
+              }
+            },
+            text: 'Log in with passkey',
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+                side: const BorderSide(color: Colors.black, width: 0.5),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: LoadingButton(
+            isLoading: _isSignUpLoading,
+            onPressed: () async {
+              if (_isSignUpLoading) return;
+
+              setState(() => _isSignUpLoading = true);
+
+              try {
+                await zeroxkeyProvider.signUpWithPasskey(rpId: EnvConfig.rpId);
+
+                if (!context.mounted) return;
+              } catch (e) {
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Passkey sign up failed: $e')),
+                );
+              } finally {
+                setState(() => _isSignUpLoading = false);
+              }
+            },
+            text: 'Sign up with passkey',
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
