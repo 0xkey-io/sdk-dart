@@ -693,6 +693,38 @@ class ZeroXKeyClient {
     );
   }
 
+  /// Get the raw AWS Nitro attestation document (COSE Sign1) for a live enclave app. Prefers a fresh NSM attestation via qos_host; falls back to the latest stored boot proof. For full pivot↔quorum-manifest verification prefer get_latest_boot_proof + client-side verifyBootProof.
+  ///
+  /// Sign the provided `TGetAttestationDocumentBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_attestation).
+  ///
+  /// See also: `stampGetAttestationDocument`.
+
+  Future<TGetAttestationDocumentResponse> getAttestationDocument({
+    required TGetAttestationDocumentBody input,
+  }) async {
+    return await request<TGetAttestationDocumentBody,
+            TGetAttestationDocumentResponse>("/public/v1/query/get_attestation",
+        input, (json) => TGetAttestationDocumentResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetAttestationDocumentBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetAttestationDocument`.
+
+  Future<TSignedRequest> stampGetAttestationDocument({
+    required TGetAttestationDocumentBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_attestation';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
   /// Get the boot proof for a given ephemeral key.
   ///
   /// Sign the provided `TGetBootProofBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_boot_proof).
@@ -5783,6 +5815,371 @@ class ZeroXKeyClient {
           (throw Exception(
               "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
       activityType: 'ACTIVITY_TYPE_VERIFY_OTP_V2',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Get the MFA status of an activity for one user or all voting users.
+  ///
+  /// Sign the provided `TGetMfaStatusBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_mfa_status).
+  ///
+  /// See also: `stampGetMfaStatus`.
+
+  Future<TGetMfaStatusResponse> getMfaStatus({
+    required TGetMfaStatusBody input,
+  }) async {
+    return await request<TGetMfaStatusBody, TGetMfaStatusResponse>(
+        "/public/v1/query/get_mfa_status",
+        input,
+        (json) => TGetMfaStatusResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetMfaStatusBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetMfaStatus`.
+
+  Future<TSignedRequest> stampGetMfaStatus({
+    required TGetMfaStatusBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_mfa_status';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Get all MFA policies for a user.
+  ///
+  /// Sign the provided `TGetMfaPoliciesBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_mfa_policies).
+  ///
+  /// See also: `stampGetMfaPolicies`.
+
+  Future<TGetMfaPoliciesResponse> getMfaPolicies({
+    required TGetMfaPoliciesBody input,
+  }) async {
+    return await request<TGetMfaPoliciesBody, TGetMfaPoliciesResponse>(
+        "/public/v1/query/get_mfa_policies",
+        input,
+        (json) => TGetMfaPoliciesResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetMfaPoliciesBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetMfaPolicies`.
+
+  Future<TSignedRequest> stampGetMfaPolicies({
+    required TGetMfaPoliciesBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_mfa_policies';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Get a single MFA policy for a user.
+  ///
+  /// Sign the provided `TGetMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_mfa_policy).
+  ///
+  /// See also: `stampGetMfaPolicy`.
+
+  Future<TGetMfaPolicyResponse> getMfaPolicy({
+    required TGetMfaPolicyBody input,
+  }) async {
+    return await request<TGetMfaPolicyBody, TGetMfaPolicyResponse>(
+        "/public/v1/query/get_mfa_policy",
+        input,
+        (json) => TGetMfaPolicyResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetMfaPolicyBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetMfaPolicy`.
+
+  Future<TSignedRequest> stampGetMfaPolicy({
+    required TGetMfaPolicyBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_mfa_policy';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Get one session profile for an organization.
+  ///
+  /// Sign the provided `TGetSessionProfileBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_session_profile).
+  ///
+  /// See also: `stampGetSessionProfile`.
+
+  Future<TGetSessionProfileResponse> getSessionProfile({
+    required TGetSessionProfileBody input,
+  }) async {
+    return await request<TGetSessionProfileBody, TGetSessionProfileResponse>(
+        "/public/v1/query/get_session_profile",
+        input,
+        (json) => TGetSessionProfileResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetSessionProfileBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetSessionProfile`.
+
+  Future<TSignedRequest> stampGetSessionProfile({
+    required TGetSessionProfileBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_session_profile';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Get all session profiles for an organization.
+  ///
+  /// Sign the provided `TGetSessionProfilesBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_session_profiles).
+  ///
+  /// See also: `stampGetSessionProfiles`.
+
+  Future<TGetSessionProfilesResponse> getSessionProfiles({
+    required TGetSessionProfilesBody input,
+  }) async {
+    return await request<TGetSessionProfilesBody, TGetSessionProfilesResponse>(
+        "/public/v1/query/get_session_profiles",
+        input,
+        (json) => TGetSessionProfilesResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetSessionProfilesBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetSessionProfiles`.
+
+  Future<TSignedRequest> stampGetSessionProfiles({
+    required TGetSessionProfilesBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_session_profiles';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Create a new MFA policy for a user.
+  ///
+  /// Sign the provided `TCreateMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/create_mfa_policy).
+  ///
+  /// See also: `stampCreateMfaPolicy`.
+
+  Future<TCreateMfaPolicyResponse> createMfaPolicy({
+    required TCreateMfaPolicyBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_CREATE_MFA_POLICY',
+    );
+    return await request<Map<String, dynamic>, TCreateMfaPolicyResponse>(
+        "/public/v1/submit/create_mfa_policy",
+        body,
+        (json) => TCreateMfaPolicyResponse.fromJson(
+            transformActivityResponse(json, 'CreateMfaPolicy')));
+  }
+
+  /// Produce a `SignedRequest` from `TCreateMfaPolicyBody` by using the client's `stamp` function.
+  ///
+  /// See also: `CreateMfaPolicy`.
+
+  Future<TSignedRequest> stampCreateMfaPolicy({
+    required TCreateMfaPolicyBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/create_mfa_policy';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_CREATE_MFA_POLICY',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Update an MFA policy for a user.
+  ///
+  /// Sign the provided `TUpdateMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/update_mfa_policy).
+  ///
+  /// See also: `stampUpdateMfaPolicy`.
+
+  Future<TUpdateMfaPolicyResponse> updateMfaPolicy({
+    required TUpdateMfaPolicyBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_UPDATE_MFA_POLICY',
+    );
+    return await request<Map<String, dynamic>, TUpdateMfaPolicyResponse>(
+        "/public/v1/submit/update_mfa_policy",
+        body,
+        (json) => TUpdateMfaPolicyResponse.fromJson(
+            transformActivityResponse(json, 'UpdateMfaPolicy')));
+  }
+
+  /// Produce a `SignedRequest` from `TUpdateMfaPolicyBody` by using the client's `stamp` function.
+  ///
+  /// See also: `UpdateMfaPolicy`.
+
+  Future<TSignedRequest> stampUpdateMfaPolicy({
+    required TUpdateMfaPolicyBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/update_mfa_policy';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_UPDATE_MFA_POLICY',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Delete an MFA policy for a user.
+  ///
+  /// Sign the provided `TDeleteMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/delete_mfa_policy).
+  ///
+  /// See also: `stampDeleteMfaPolicy`.
+
+  Future<TDeleteMfaPolicyResponse> deleteMfaPolicy({
+    required TDeleteMfaPolicyBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_DELETE_MFA_POLICY',
+    );
+    return await request<Map<String, dynamic>, TDeleteMfaPolicyResponse>(
+        "/public/v1/submit/delete_mfa_policy",
+        body,
+        (json) => TDeleteMfaPolicyResponse.fromJson(
+            transformActivityResponse(json, 'DeleteMfaPolicy')));
+  }
+
+  /// Produce a `SignedRequest` from `TDeleteMfaPolicyBody` by using the client's `stamp` function.
+  ///
+  /// See also: `DeleteMfaPolicy`.
+
+  Future<TSignedRequest> stampDeleteMfaPolicy({
+    required TDeleteMfaPolicyBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/delete_mfa_policy';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_DELETE_MFA_POLICY',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Create a new session profile for an organization.
+  ///
+  /// Sign the provided `TCreateSessionProfileBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/create_session_profile).
+  ///
+  /// See also: `stampCreateSessionProfile`.
+
+  Future<TCreateSessionProfileResponse> createSessionProfile({
+    required TCreateSessionProfileBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_CREATE_SESSION_PROFILE',
+    );
+    return await request<Map<String, dynamic>, TCreateSessionProfileResponse>(
+        "/public/v1/submit/create_session_profile",
+        body,
+        (json) => TCreateSessionProfileResponse.fromJson(
+            transformActivityResponse(json, 'CreateSessionProfile')));
+  }
+
+  /// Produce a `SignedRequest` from `TCreateSessionProfileBody` by using the client's `stamp` function.
+  ///
+  /// See also: `CreateSessionProfile`.
+
+  Future<TSignedRequest> stampCreateSessionProfile({
+    required TCreateSessionProfileBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/create_session_profile';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_CREATE_SESSION_PROFILE',
     );
     final bodyJson = jsonEncode(body);
     final stamp = await stamper.stamp(bodyJson);
