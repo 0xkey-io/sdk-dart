@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
@@ -25,8 +24,9 @@ class _MockStamper implements TStamper {
 void main() {
   test('pin records the frozen services OpenAPI hash', () {
     final pin = <String, String>{};
-    for (final line
-        in File('lib/swagger/contract-pin.yaml').readAsStringSync().split('\n')) {
+    for (final line in File('lib/swagger/contract-pin.yaml')
+        .readAsStringSync()
+        .split('\n')) {
       final match = RegExp(r'^(\w+):\s*"([^"]+)"').firstMatch(line);
       if (match != null) {
         pin[match.group(1)!] = match.group(2)!;
@@ -34,7 +34,8 @@ void main() {
     }
     expect(pin['openapi_sha256'], frozenOpenApiSha256);
     expect(pin['services_commit'], frozenServicesCommit);
-    final swagger = File('lib/swagger/public_api.swagger.json').readAsBytesSync();
+    final swagger =
+        File('lib/swagger/public_api.swagger.json').readAsBytesSync();
     expect(sha256.convert(swagger).toString(), frozenOpenApiSha256);
   });
 
@@ -44,6 +45,13 @@ void main() {
         v1ActivityStatus.activity_status_authenticators_needed,
       ),
       'ACTIVITY_STATUS_AUTHENTICATORS_NEEDED',
+    );
+  });
+
+  test('unknown activity status degrades only to unspecified', () {
+    expect(
+      v1ActivityStatusFromJson('ACTIVITY_STATUS_ADDED_LATER'),
+      v1ActivityStatus.activity_status_unspecified,
     );
   });
 

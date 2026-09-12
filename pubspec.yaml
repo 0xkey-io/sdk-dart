@@ -9,6 +9,7 @@ environment:
 workspace:
   # packages
   - packages/api-key-stamper
+  - packages/attested-stamper
   - packages/core
   - packages/crypto
   - packages/encoding

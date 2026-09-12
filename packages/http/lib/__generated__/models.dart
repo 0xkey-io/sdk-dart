@@ -94,7 +94,7 @@ v1ActivityStatus v1ActivityStatusFromJson(dynamic value) {
     case 'ACTIVITY_STATUS_AUTHENTICATORS_NEEDED':
       return v1ActivityStatus.activity_status_authenticators_needed;
     default:
-      throw ArgumentError('Unknown v1ActivityStatus: $value');
+      return v1ActivityStatus.activity_status_unspecified;
   }
 }
 

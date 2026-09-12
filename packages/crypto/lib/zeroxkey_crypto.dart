@@ -9,3 +9,5 @@ export 'src/zeroxkey.dart'
         encryptWalletToBundle;
 export 'src/crypto.dart'
     show getPublicKey, generateP256KeyPair, fromDerSignature;
+export 'src/session_claims.dart'
+    show UntrustedSessionClaims, verifyAndDecodeSessionClaims;
