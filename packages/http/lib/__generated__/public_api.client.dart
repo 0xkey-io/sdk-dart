@@ -627,6 +627,38 @@ class ZeroXKeyClient {
     );
   }
 
+  /// Get the raw AWS Nitro attestation document (COSE Sign1) for a live enclave app. Prefers a fresh NSM attestation via qos_host; falls back to the latest stored boot proof. For full pivot↔quorum-manifest verification prefer get_latest_boot_proof + client-side verifyBootProof.
+  ///
+  /// Sign the provided `TGetAttestationDocumentBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_attestation).
+  ///
+  /// See also: `stampGetAttestationDocument`.
+
+  Future<TGetAttestationDocumentResponse> getAttestationDocument({
+    required TGetAttestationDocumentBody input,
+  }) async {
+    return await request<TGetAttestationDocumentBody,
+            TGetAttestationDocumentResponse>("/public/v1/query/get_attestation",
+        input, (json) => TGetAttestationDocumentResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetAttestationDocumentBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetAttestationDocument`.
+
+  Future<TSignedRequest> stampGetAttestationDocument({
+    required TGetAttestationDocumentBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_attestation';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
   /// Get details about an authenticator.
   ///
   /// Sign the provided `TGetAuthenticatorBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_authenticator).
@@ -683,38 +715,6 @@ class ZeroXKeyClient {
     required TGetAuthenticatorsBody input,
   }) async {
     final fullUrl = '${config.baseUrl}/public/v1/query/get_authenticators';
-    final body = jsonEncode(input);
-    final stamp = await stamper.stamp(body);
-
-    return TSignedRequest(
-      body: body,
-      stamp: stamp,
-      url: fullUrl,
-    );
-  }
-
-  /// Get the raw AWS Nitro attestation document (COSE Sign1) for a live enclave app. Prefers a fresh NSM attestation via qos_host; falls back to the latest stored boot proof. For full pivot↔quorum-manifest verification prefer get_latest_boot_proof + client-side verifyBootProof.
-  ///
-  /// Sign the provided `TGetAttestationDocumentBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_attestation).
-  ///
-  /// See also: `stampGetAttestationDocument`.
-
-  Future<TGetAttestationDocumentResponse> getAttestationDocument({
-    required TGetAttestationDocumentBody input,
-  }) async {
-    return await request<TGetAttestationDocumentBody,
-            TGetAttestationDocumentResponse>("/public/v1/query/get_attestation",
-        input, (json) => TGetAttestationDocumentResponse.fromJson(json));
-  }
-
-  /// Produce a `SignedRequest` from `TGetAttestationDocumentBody` by using the client's `stamp` function.
-  ///
-  /// See also: `GetAttestationDocument`.
-
-  Future<TSignedRequest> stampGetAttestationDocument({
-    required TGetAttestationDocumentBody input,
-  }) async {
-    final fullUrl = '${config.baseUrl}/public/v1/query/get_attestation';
     final body = jsonEncode(input);
     final stamp = await stamper.stamp(body);
 
@@ -824,6 +824,105 @@ class ZeroXKeyClient {
     );
   }
 
+  /// Get all MFA policies for a user.
+  ///
+  /// Sign the provided `TGetMfaPoliciesBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_mfa_policies).
+  ///
+  /// See also: `stampGetMfaPolicies`.
+
+  Future<TGetMfaPoliciesResponse> getMfaPolicies({
+    required TGetMfaPoliciesBody input,
+  }) async {
+    return await request<TGetMfaPoliciesBody, TGetMfaPoliciesResponse>(
+        "/public/v1/query/get_mfa_policies",
+        input,
+        (json) => TGetMfaPoliciesResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetMfaPoliciesBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetMfaPolicies`.
+
+  Future<TSignedRequest> stampGetMfaPolicies({
+    required TGetMfaPoliciesBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_mfa_policies';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Get a single MFA policy for a user.
+  ///
+  /// Sign the provided `TGetMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_mfa_policy).
+  ///
+  /// See also: `stampGetMfaPolicy`.
+
+  Future<TGetMfaPolicyResponse> getMfaPolicy({
+    required TGetMfaPolicyBody input,
+  }) async {
+    return await request<TGetMfaPolicyBody, TGetMfaPolicyResponse>(
+        "/public/v1/query/get_mfa_policy",
+        input,
+        (json) => TGetMfaPolicyResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetMfaPolicyBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetMfaPolicy`.
+
+  Future<TSignedRequest> stampGetMfaPolicy({
+    required TGetMfaPolicyBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_mfa_policy';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Get the MFA status of an activity for one user or all voting users.
+  ///
+  /// Sign the provided `TGetMfaStatusBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_mfa_status).
+  ///
+  /// See also: `stampGetMfaStatus`.
+
+  Future<TGetMfaStatusResponse> getMfaStatus({
+    required TGetMfaStatusBody input,
+  }) async {
+    return await request<TGetMfaStatusBody, TGetMfaStatusResponse>(
+        "/public/v1/query/get_mfa_status",
+        input,
+        (json) => TGetMfaStatusResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetMfaStatusBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetMfaStatus`.
+
+  Future<TSignedRequest> stampGetMfaStatus({
+    required TGetMfaStatusBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_mfa_status';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
   /// Get nonce values for an address on a given network. Can fetch the standard on-chain nonce and/or the gas station nonce used for sponsored transactions.
   ///
   /// Sign the provided `TGetNoncesBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_nonces).
@@ -914,6 +1013,39 @@ class ZeroXKeyClient {
     required TGetOauthProvidersBody input,
   }) async {
     final fullUrl = '${config.baseUrl}/public/v1/query/get_oauth_providers';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// List the OIDC Identity Providers registered as trusted for this organization.
+  ///
+  /// Sign the provided `TGetOidcProvidersBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_oidc_providers).
+  ///
+  /// See also: `stampGetOidcProviders`.
+
+  Future<TGetOidcProvidersResponse> getOidcProviders({
+    required TGetOidcProvidersBody input,
+  }) async {
+    return await request<TGetOidcProvidersBody, TGetOidcProvidersResponse>(
+        "/public/v1/query/get_oidc_providers",
+        input,
+        (json) => TGetOidcProvidersResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetOidcProvidersBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetOidcProviders`.
+
+  Future<TSignedRequest> stampGetOidcProviders({
+    required TGetOidcProvidersBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_oidc_providers';
     final body = jsonEncode(input);
     final stamp = await stamper.stamp(body);
 
@@ -1119,6 +1251,72 @@ class ZeroXKeyClient {
   }) async {
     final fullUrl =
         '${config.baseUrl}/public/v1/query/get_send_transaction_status';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Get one session profile for an organization.
+  ///
+  /// Sign the provided `TGetSessionProfileBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_session_profile).
+  ///
+  /// See also: `stampGetSessionProfile`.
+
+  Future<TGetSessionProfileResponse> getSessionProfile({
+    required TGetSessionProfileBody input,
+  }) async {
+    return await request<TGetSessionProfileBody, TGetSessionProfileResponse>(
+        "/public/v1/query/get_session_profile",
+        input,
+        (json) => TGetSessionProfileResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetSessionProfileBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetSessionProfile`.
+
+  Future<TSignedRequest> stampGetSessionProfile({
+    required TGetSessionProfileBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_session_profile';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Get all session profiles for an organization.
+  ///
+  /// Sign the provided `TGetSessionProfilesBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_session_profiles).
+  ///
+  /// See also: `stampGetSessionProfiles`.
+
+  Future<TGetSessionProfilesResponse> getSessionProfiles({
+    required TGetSessionProfilesBody input,
+  }) async {
+    return await request<TGetSessionProfilesBody, TGetSessionProfilesResponse>(
+        "/public/v1/query/get_session_profiles",
+        input,
+        (json) => TGetSessionProfilesResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TGetSessionProfilesBody` by using the client's `stamp` function.
+  ///
+  /// See also: `GetSessionProfiles`.
+
+  Future<TSignedRequest> stampGetSessionProfiles({
+    required TGetSessionProfilesBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/get_session_profiles';
     final body = jsonEncode(input);
     final stamp = await stamper.stamp(body);
 
@@ -1364,6 +1562,41 @@ class ZeroXKeyClient {
     );
   }
 
+  /// List the most recent gas sponsorship usage entries for an organization (newest first), joined with each sponsored transaction's broadcast lifecycle (tx hash, status, block, actual native fee). Powers the Gas Station sponsorship records table.
+  ///
+  /// Sign the provided `TListGasSponsorshipUsageBody` with the client's `stamp` function and submit the request (POST /public/v1/query/list_gas_sponsorship_usage).
+  ///
+  /// See also: `stampListGasSponsorshipUsage`.
+
+  Future<TListGasSponsorshipUsageResponse> listGasSponsorshipUsage({
+    required TListGasSponsorshipUsageBody input,
+  }) async {
+    return await request<TListGasSponsorshipUsageBody,
+            TListGasSponsorshipUsageResponse>(
+        "/public/v1/query/list_gas_sponsorship_usage",
+        input,
+        (json) => TListGasSponsorshipUsageResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TListGasSponsorshipUsageBody` by using the client's `stamp` function.
+  ///
+  /// See also: `ListGasSponsorshipUsage`.
+
+  Future<TSignedRequest> stampListGasSponsorshipUsage({
+    required TListGasSponsorshipUsageBody input,
+  }) async {
+    final fullUrl =
+        '${config.baseUrl}/public/v1/query/list_gas_sponsorship_usage';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
   /// List all OAuth 2.0 credentials within an organization.
   ///
   /// Sign the provided `TListOauth2CredentialsBody` with the client's `stamp` function and submit the request (POST /public/v1/query/list_oauth2_credentials).
@@ -1487,6 +1720,40 @@ class ZeroXKeyClient {
     required TGetPrivateKeysBody input,
   }) async {
     final fullUrl = '${config.baseUrl}/public/v1/query/list_private_keys';
+    final body = jsonEncode(input);
+    final stamp = await stamper.stamp(body);
+
+    return TSignedRequest(
+      body: body,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// List the most recent send-transaction records for an organization (newest first), optionally filtered to a single CAIP-2 network. Powers the Dashboard Company Wallets transaction history page.
+  ///
+  /// Sign the provided `TListSendTransactionsBody` with the client's `stamp` function and submit the request (POST /public/v1/query/list_send_transactions).
+  ///
+  /// See also: `stampListSendTransactions`.
+
+  Future<TListSendTransactionsResponse> listSendTransactions({
+    required TListSendTransactionsBody input,
+  }) async {
+    return await request<TListSendTransactionsBody,
+            TListSendTransactionsResponse>(
+        "/public/v1/query/list_send_transactions",
+        input,
+        (json) => TListSendTransactionsResponse.fromJson(json));
+  }
+
+  /// Produce a `SignedRequest` from `TListSendTransactionsBody` by using the client's `stamp` function.
+  ///
+  /// See also: `ListSendTransactions`.
+
+  Future<TSignedRequest> stampListSendTransactions({
+    required TListSendTransactionsBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/list_send_transactions';
     final body = jsonEncode(input);
     final stamp = await stamper.stamp(body);
 
@@ -1765,6 +2032,106 @@ class ZeroXKeyClient {
     );
   }
 
+  /// Build an unsigned EVM transaction server-side: resolve nonce, gas limit and EIP-1559 fees from the network and assemble the unsigned envelope. The client then stamps the returned unsigned transaction (SIGN_TRANSACTION_V2) — no client-side RPC or nonce management required.
+  ///
+  /// Sign the provided `TPrepareEthTransactionBody` with the client's `stamp` function and submit the request (POST /public/v1/query/prepare_eth_transaction).
+  ///
+  /// See also: `stampPrepareEthTransaction`.
+
+  Future<TPrepareEthTransactionResponse> prepareEthTransaction({
+    required TPrepareEthTransactionBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_PREPARE_ETH_TRANSACTION',
+    );
+    return await request<Map<String, dynamic>, TPrepareEthTransactionResponse>(
+        "/public/v1/query/prepare_eth_transaction",
+        body,
+        (json) => TPrepareEthTransactionResponse.fromJson(
+            transformActivityResponse(json, 'PrepareEthTransaction')));
+  }
+
+  /// Produce a `SignedRequest` from `TPrepareEthTransactionBody` by using the client's `stamp` function.
+  ///
+  /// See also: `PrepareEthTransaction`.
+
+  Future<TSignedRequest> stampPrepareEthTransaction({
+    required TPrepareEthTransactionBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/prepare_eth_transaction';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_PREPARE_ETH_TRANSACTION',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Build an unsigned Solana transaction server-side: fetch a recent blockhash and assemble an unsigned System Transfer message. The client then stamps the returned unsigned transaction (SIGN_TRANSACTION_V2) and broadcasts via SolSendRawTransaction — no client-side RPC or blockhash management required.
+  ///
+  /// Sign the provided `TPrepareSolTransactionBody` with the client's `stamp` function and submit the request (POST /public/v1/query/prepare_sol_transaction).
+  ///
+  /// See also: `stampPrepareSolTransaction`.
+
+  Future<TPrepareSolTransactionResponse> prepareSolTransaction({
+    required TPrepareSolTransactionBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_PREPARE_SOL_TRANSACTION',
+    );
+    return await request<Map<String, dynamic>, TPrepareSolTransactionResponse>(
+        "/public/v1/query/prepare_sol_transaction",
+        body,
+        (json) => TPrepareSolTransactionResponse.fromJson(
+            transformActivityResponse(json, 'PrepareSolTransaction')));
+  }
+
+  /// Produce a `SignedRequest` from `TPrepareSolTransactionBody` by using the client's `stamp` function.
+  ///
+  /// See also: `PrepareSolTransaction`.
+
+  Future<TSignedRequest> stampPrepareSolTransaction({
+    required TPrepareSolTransactionBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/query/prepare_sol_transaction';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_PREPARE_SOL_TRANSACTION',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
   /// Simulate how the organization's policy chain would evaluate a hypothetical activity. Read-only dry-run executed by the enclave Policy Engine: no activity is created, no Ruling is signed, and consensus scenarios are evaluated with declared approvers instead of real signatures.
   ///
   /// Sign the provided `TSimulatePolicyChainBody` with the client's `stamp` function and submit the request (POST /public/v1/query/simulate_policy_chain).
@@ -1887,6 +2254,56 @@ class ZeroXKeyClient {
           (throw Exception(
               "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
       activityType: 'ACTIVITY_TYPE_SEND_LOGIN_LINK',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Activate a billing plan tier for the organization (product_id carries the plan SKU).
+  ///
+  /// Sign the provided `TActivateBillingTierBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/activate_billing_tier).
+  ///
+  /// See also: `stampActivateBillingTier`.
+
+  Future<TActivateBillingTierResponse> activateBillingTier({
+    required TActivateBillingTierBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_ACTIVATE_BILLING_TIER',
+    );
+    return await request<Map<String, dynamic>, TActivateBillingTierResponse>(
+        "/public/v1/submit/activate_billing_tier",
+        body,
+        (json) => TActivateBillingTierResponse.fromJson(
+            transformActivityResponse(json, 'ActivateBillingTier')));
+  }
+
+  /// Produce a `SignedRequest` from `TActivateBillingTierBody` by using the client's `stamp` function.
+  ///
+  /// See also: `ActivateBillingTier`.
+
+  Future<TSignedRequest> stampActivateBillingTier({
+    required TActivateBillingTierBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/activate_billing_tier';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_ACTIVATE_BILLING_TIER',
     );
     final bodyJson = jsonEncode(body);
     final stamp = await stamper.stamp(bodyJson);
@@ -2150,6 +2567,56 @@ class ZeroXKeyClient {
     );
   }
 
+  /// Create a new MFA policy for a user.
+  ///
+  /// Sign the provided `TCreateMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/create_mfa_policy).
+  ///
+  /// See also: `stampCreateMfaPolicy`.
+
+  Future<TCreateMfaPolicyResponse> createMfaPolicy({
+    required TCreateMfaPolicyBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_CREATE_MFA_POLICY',
+    );
+    return await request<Map<String, dynamic>, TCreateMfaPolicyResponse>(
+        "/public/v1/submit/create_mfa_policy",
+        body,
+        (json) => TCreateMfaPolicyResponse.fromJson(
+            transformActivityResponse(json, 'CreateMfaPolicy')));
+  }
+
+  /// Produce a `SignedRequest` from `TCreateMfaPolicyBody` by using the client's `stamp` function.
+  ///
+  /// See also: `CreateMfaPolicy`.
+
+  Future<TSignedRequest> stampCreateMfaPolicy({
+    required TCreateMfaPolicyBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/create_mfa_policy';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_CREATE_MFA_POLICY',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
   /// Enable authentication for end users with an OAuth 2.0 provider
   ///
   /// Sign the provided `TCreateOauth2CredentialBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/create_oauth2_credential).
@@ -2240,6 +2707,56 @@ class ZeroXKeyClient {
           (throw Exception(
               "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
       activityType: 'ACTIVITY_TYPE_CREATE_OAUTH_PROVIDERS_V2',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Register a customer OIDC Identity Provider as trusted for this (parent) organization's OAUTH_LOGIN / CreateOauthProviders. Only root-quorum admins may perform this.
+  ///
+  /// Sign the provided `TCreateOidcProviderBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/create_oidc_provider).
+  ///
+  /// See also: `stampCreateOidcProvider`.
+
+  Future<TCreateOidcProviderResponse> createOidcProvider({
+    required TCreateOidcProviderBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_CREATE_OIDC_PROVIDER',
+    );
+    return await request<Map<String, dynamic>, TCreateOidcProviderResponse>(
+        "/public/v1/submit/create_oidc_provider",
+        body,
+        (json) => TCreateOidcProviderResponse.fromJson(
+            transformActivityResponse(json, 'CreateOidcProvider')));
+  }
+
+  /// Produce a `SignedRequest` from `TCreateOidcProviderBody` by using the client's `stamp` function.
+  ///
+  /// See also: `CreateOidcProvider`.
+
+  Future<TSignedRequest> stampCreateOidcProvider({
+    required TCreateOidcProviderBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/create_oidc_provider';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_CREATE_OIDC_PROVIDER',
     );
     final bodyJson = jsonEncode(body);
     final stamp = await stamper.stamp(bodyJson);
@@ -2542,6 +3059,56 @@ class ZeroXKeyClient {
           (throw Exception(
               "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
       activityType: 'ACTIVITY_TYPE_CREATE_READ_WRITE_SESSION_V2',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Create a new session profile for an organization.
+  ///
+  /// Sign the provided `TCreateSessionProfileBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/create_session_profile).
+  ///
+  /// See also: `stampCreateSessionProfile`.
+
+  Future<TCreateSessionProfileResponse> createSessionProfile({
+    required TCreateSessionProfileBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_CREATE_SESSION_PROFILE',
+    );
+    return await request<Map<String, dynamic>, TCreateSessionProfileResponse>(
+        "/public/v1/submit/create_session_profile",
+        body,
+        (json) => TCreateSessionProfileResponse.fromJson(
+            transformActivityResponse(json, 'CreateSessionProfile')));
+  }
+
+  /// Produce a `SignedRequest` from `TCreateSessionProfileBody` by using the client's `stamp` function.
+  ///
+  /// See also: `CreateSessionProfile`.
+
+  Future<TSignedRequest> stampCreateSessionProfile({
+    required TCreateSessionProfileBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/create_session_profile';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_CREATE_SESSION_PROFILE',
     );
     final bodyJson = jsonEncode(body);
     final stamp = await stamper.stamp(bodyJson);
@@ -3109,6 +3676,56 @@ class ZeroXKeyClient {
     );
   }
 
+  /// Delete an MFA policy for a user.
+  ///
+  /// Sign the provided `TDeleteMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/delete_mfa_policy).
+  ///
+  /// See also: `stampDeleteMfaPolicy`.
+
+  Future<TDeleteMfaPolicyResponse> deleteMfaPolicy({
+    required TDeleteMfaPolicyBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_DELETE_MFA_POLICY',
+    );
+    return await request<Map<String, dynamic>, TDeleteMfaPolicyResponse>(
+        "/public/v1/submit/delete_mfa_policy",
+        body,
+        (json) => TDeleteMfaPolicyResponse.fromJson(
+            transformActivityResponse(json, 'DeleteMfaPolicy')));
+  }
+
+  /// Produce a `SignedRequest` from `TDeleteMfaPolicyBody` by using the client's `stamp` function.
+  ///
+  /// See also: `DeleteMfaPolicy`.
+
+  Future<TSignedRequest> stampDeleteMfaPolicy({
+    required TDeleteMfaPolicyBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/delete_mfa_policy';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_DELETE_MFA_POLICY',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
   /// Disable authentication for end users with an OAuth 2.0 provider
   ///
   /// Sign the provided `TDeleteOauth2CredentialBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/delete_oauth2_credential).
@@ -3199,6 +3816,106 @@ class ZeroXKeyClient {
           (throw Exception(
               "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
       activityType: 'ACTIVITY_TYPE_DELETE_OAUTH_PROVIDERS',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Remove one or more registered OIDC Identity Providers.
+  ///
+  /// Sign the provided `TDeleteOidcProviderBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/delete_oidc_provider).
+  ///
+  /// See also: `stampDeleteOidcProvider`.
+
+  Future<TDeleteOidcProviderResponse> deleteOidcProvider({
+    required TDeleteOidcProviderBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_DELETE_OIDC_PROVIDER',
+    );
+    return await request<Map<String, dynamic>, TDeleteOidcProviderResponse>(
+        "/public/v1/submit/delete_oidc_provider",
+        body,
+        (json) => TDeleteOidcProviderResponse.fromJson(
+            transformActivityResponse(json, 'DeleteOidcProvider')));
+  }
+
+  /// Produce a `SignedRequest` from `TDeleteOidcProviderBody` by using the client's `stamp` function.
+  ///
+  /// See also: `DeleteOidcProvider`.
+
+  Future<TSignedRequest> stampDeleteOidcProvider({
+    required TDeleteOidcProviderBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/delete_oidc_provider';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_DELETE_OIDC_PROVIDER',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Remove a payment method from the organization.
+  ///
+  /// Sign the provided `TDeletePaymentMethodBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/delete_payment_method).
+  ///
+  /// See also: `stampDeletePaymentMethod`.
+
+  Future<TDeletePaymentMethodResponse> deletePaymentMethod({
+    required TDeletePaymentMethodBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_DELETE_PAYMENT_METHOD',
+    );
+    return await request<Map<String, dynamic>, TDeletePaymentMethodResponse>(
+        "/public/v1/submit/delete_payment_method",
+        body,
+        (json) => TDeletePaymentMethodResponse.fromJson(
+            transformActivityResponse(json, 'DeletePaymentMethod')));
+  }
+
+  /// Produce a `SignedRequest` from `TDeletePaymentMethodBody` by using the client's `stamp` function.
+  ///
+  /// See also: `DeletePaymentMethod`.
+
+  Future<TSignedRequest> stampDeletePaymentMethod({
+    required TDeletePaymentMethodBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/delete_payment_method';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_DELETE_PAYMENT_METHOD',
     );
     final bodyJson = jsonEncode(body);
     final stamp = await stamper.stamp(bodyJson);
@@ -4870,6 +5587,56 @@ class ZeroXKeyClient {
     );
   }
 
+  /// Attach a tokenized payment method to the organization (V2, PSP token only — no raw card data).
+  ///
+  /// Sign the provided `TSetPaymentMethodBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/set_payment_method).
+  ///
+  /// See also: `stampSetPaymentMethod`.
+
+  Future<TSetPaymentMethodResponse> setPaymentMethod({
+    required TSetPaymentMethodBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_SET_PAYMENT_METHOD_V2',
+    );
+    return await request<Map<String, dynamic>, TSetPaymentMethodResponse>(
+        "/public/v1/submit/set_payment_method",
+        body,
+        (json) => TSetPaymentMethodResponse.fromJson(
+            transformActivityResponse(json, 'SetPaymentMethod')));
+  }
+
+  /// Produce a `SignedRequest` from `TSetPaymentMethodBody` by using the client's `stamp` function.
+  ///
+  /// See also: `SetPaymentMethod`.
+
+  Future<TSignedRequest> stampSetPaymentMethod({
+    required TSetPaymentMethodBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/set_payment_method';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_SET_PAYMENT_METHOD_V2',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
   /// Sign a raw payload.
   ///
   /// Sign the provided `TSignRawPayloadBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/sign_raw_payload).
@@ -5120,6 +5887,106 @@ class ZeroXKeyClient {
     );
   }
 
+  /// Broadcast a one-time EIP-7702 delegation for an EOA. The caller signs the authorization off-chain (SIGN_RAW_PAYLOAD_V2 + PAYLOAD_ENCODING_EIP7702_AUTHORIZATION); the platform paymaster pays the gas to broadcast the Type-4 transaction that installs the 0xkey gas-station delegate. Only the 0xkey delegate address is accepted (allowlist).
+  ///
+  /// Sign the provided `TSubmitDelegationBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/submit_delegation).
+  ///
+  /// See also: `stampSubmitDelegation`.
+
+  Future<TSubmitDelegationResponse> submitDelegation({
+    required TSubmitDelegationBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_SUBMIT_DELEGATION',
+    );
+    return await request<Map<String, dynamic>, TSubmitDelegationResponse>(
+        "/public/v1/submit/submit_delegation",
+        body,
+        (json) => TSubmitDelegationResponse.fromJson(
+            transformActivityResponse(json, 'SubmitDelegation')));
+  }
+
+  /// Produce a `SignedRequest` from `TSubmitDelegationBody` by using the client's `stamp` function.
+  ///
+  /// See also: `SubmitDelegation`.
+
+  Future<TSignedRequest> stampSubmitDelegation({
+    required TSubmitDelegationBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/submit_delegation';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_SUBMIT_DELEGATION',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Submit a native TRX transfer intent describing a transaction you would like to broadcast.
+  ///
+  /// Sign the provided `TTronSendTransactionBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/tron_send_transaction).
+  ///
+  /// See also: `stampTronSendTransaction`.
+
+  Future<TTronSendTransactionResponse> tronSendTransaction({
+    required TTronSendTransactionBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_TRON_SEND_TRANSACTION',
+    );
+    return await request<Map<String, dynamic>, TTronSendTransactionResponse>(
+        "/public/v1/submit/tron_send_transaction",
+        body,
+        (json) => TTronSendTransactionResponse.fromJson(
+            transformActivityResponse(json, 'TronSendTransaction')));
+  }
+
+  /// Produce a `SignedRequest` from `TTronSendTransactionBody` by using the client's `stamp` function.
+  ///
+  /// See also: `TronSendTransaction`.
+
+  Future<TSignedRequest> stampTronSendTransaction({
+    required TTronSendTransactionBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/tron_send_transaction';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_TRON_SEND_TRANSACTION',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
   /// Update a fiat on ramp provider credential
   ///
   /// Sign the provided `TUpdateFiatOnRampCredentialBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/update_fiat_on_ramp_credential).
@@ -5172,6 +6039,56 @@ class ZeroXKeyClient {
     );
   }
 
+  /// Update an MFA policy for a user.
+  ///
+  /// Sign the provided `TUpdateMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/update_mfa_policy).
+  ///
+  /// See also: `stampUpdateMfaPolicy`.
+
+  Future<TUpdateMfaPolicyResponse> updateMfaPolicy({
+    required TUpdateMfaPolicyBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_UPDATE_MFA_POLICY',
+    );
+    return await request<Map<String, dynamic>, TUpdateMfaPolicyResponse>(
+        "/public/v1/submit/update_mfa_policy",
+        body,
+        (json) => TUpdateMfaPolicyResponse.fromJson(
+            transformActivityResponse(json, 'UpdateMfaPolicy')));
+  }
+
+  /// Produce a `SignedRequest` from `TUpdateMfaPolicyBody` by using the client's `stamp` function.
+  ///
+  /// See also: `UpdateMfaPolicy`.
+
+  Future<TSignedRequest> stampUpdateMfaPolicy({
+    required TUpdateMfaPolicyBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/update_mfa_policy';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_UPDATE_MFA_POLICY',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
   /// Update an OAuth 2.0 provider credential
   ///
   /// Sign the provided `TUpdateOauth2CredentialBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/update_oauth2_credential).
@@ -5212,6 +6129,56 @@ class ZeroXKeyClient {
           (throw Exception(
               "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
       activityType: 'ACTIVITY_TYPE_UPDATE_OAUTH2_CREDENTIAL',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
+  /// Update a registered OIDC Identity Provider's name, audiences, or enabled state.
+  ///
+  /// Sign the provided `TUpdateOidcProviderBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/update_oidc_provider).
+  ///
+  /// See also: `stampUpdateOidcProvider`.
+
+  Future<TUpdateOidcProviderResponse> updateOidcProvider({
+    required TUpdateOidcProviderBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_UPDATE_OIDC_PROVIDER',
+    );
+    return await request<Map<String, dynamic>, TUpdateOidcProviderResponse>(
+        "/public/v1/submit/update_oidc_provider",
+        body,
+        (json) => TUpdateOidcProviderResponse.fromJson(
+            transformActivityResponse(json, 'UpdateOidcProvider')));
+  }
+
+  /// Produce a `SignedRequest` from `TUpdateOidcProviderBody` by using the client's `stamp` function.
+  ///
+  /// See also: `UpdateOidcProvider`.
+
+  Future<TSignedRequest> stampUpdateOidcProvider({
+    required TUpdateOidcProviderBody input,
+  }) async {
+    final fullUrl = '${config.baseUrl}/public/v1/submit/update_oidc_provider';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_UPDATE_OIDC_PROVIDER',
     );
     final bodyJson = jsonEncode(body);
     final stamp = await stamper.stamp(bodyJson);
@@ -5776,6 +6743,57 @@ class ZeroXKeyClient {
     );
   }
 
+  /// Configure the per-organization gas sponsorship spend cap: rolling window, native-currency limit (wei), and whether it is enforced. Enforced fail-closed before each sponsored broadcast.
+  ///
+  /// Sign the provided `TUpsertGasUsageConfigBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/upsert_gas_usage_config).
+  ///
+  /// See also: `stampUpsertGasUsageConfig`.
+
+  Future<TUpsertGasUsageConfigResponse> upsertGasUsageConfig({
+    required TUpsertGasUsageConfigBody input,
+  }) async {
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_UPSERT_GAS_USAGE_CONFIG',
+    );
+    return await request<Map<String, dynamic>, TUpsertGasUsageConfigResponse>(
+        "/public/v1/submit/upsert_gas_usage_config",
+        body,
+        (json) => TUpsertGasUsageConfigResponse.fromJson(
+            transformActivityResponse(json, 'UpsertGasUsageConfig')));
+  }
+
+  /// Produce a `SignedRequest` from `TUpsertGasUsageConfigBody` by using the client's `stamp` function.
+  ///
+  /// See also: `UpsertGasUsageConfig`.
+
+  Future<TSignedRequest> stampUpsertGasUsageConfig({
+    required TUpsertGasUsageConfigBody input,
+  }) async {
+    final fullUrl =
+        '${config.baseUrl}/public/v1/submit/upsert_gas_usage_config';
+    final body = packActivityBody(
+      bodyJson: input.toJson(),
+      fallbackOrganizationId: input.organizationId ??
+          config.organizationId ??
+          (throw Exception(
+              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
+      activityType: 'ACTIVITY_TYPE_UPSERT_GAS_USAGE_CONFIG',
+    );
+    final bodyJson = jsonEncode(body);
+    final stamp = await stamper.stamp(bodyJson);
+
+    return TSignedRequest(
+      body: bodyJson,
+      stamp: stamp,
+      url: fullUrl,
+    );
+  }
+
   /// Verify a generic OTP (legacy, plaintext otpCode).
   ///
   /// Sign the provided `TVerifyOtpBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/verify_otp).
@@ -5815,371 +6833,6 @@ class ZeroXKeyClient {
           (throw Exception(
               "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
       activityType: 'ACTIVITY_TYPE_VERIFY_OTP_V2',
-    );
-    final bodyJson = jsonEncode(body);
-    final stamp = await stamper.stamp(bodyJson);
-
-    return TSignedRequest(
-      body: bodyJson,
-      stamp: stamp,
-      url: fullUrl,
-    );
-  }
-
-  /// Get the MFA status of an activity for one user or all voting users.
-  ///
-  /// Sign the provided `TGetMfaStatusBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_mfa_status).
-  ///
-  /// See also: `stampGetMfaStatus`.
-
-  Future<TGetMfaStatusResponse> getMfaStatus({
-    required TGetMfaStatusBody input,
-  }) async {
-    return await request<TGetMfaStatusBody, TGetMfaStatusResponse>(
-        "/public/v1/query/get_mfa_status",
-        input,
-        (json) => TGetMfaStatusResponse.fromJson(json));
-  }
-
-  /// Produce a `SignedRequest` from `TGetMfaStatusBody` by using the client's `stamp` function.
-  ///
-  /// See also: `GetMfaStatus`.
-
-  Future<TSignedRequest> stampGetMfaStatus({
-    required TGetMfaStatusBody input,
-  }) async {
-    final fullUrl = '${config.baseUrl}/public/v1/query/get_mfa_status';
-    final body = jsonEncode(input);
-    final stamp = await stamper.stamp(body);
-
-    return TSignedRequest(
-      body: body,
-      stamp: stamp,
-      url: fullUrl,
-    );
-  }
-
-  /// Get all MFA policies for a user.
-  ///
-  /// Sign the provided `TGetMfaPoliciesBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_mfa_policies).
-  ///
-  /// See also: `stampGetMfaPolicies`.
-
-  Future<TGetMfaPoliciesResponse> getMfaPolicies({
-    required TGetMfaPoliciesBody input,
-  }) async {
-    return await request<TGetMfaPoliciesBody, TGetMfaPoliciesResponse>(
-        "/public/v1/query/get_mfa_policies",
-        input,
-        (json) => TGetMfaPoliciesResponse.fromJson(json));
-  }
-
-  /// Produce a `SignedRequest` from `TGetMfaPoliciesBody` by using the client's `stamp` function.
-  ///
-  /// See also: `GetMfaPolicies`.
-
-  Future<TSignedRequest> stampGetMfaPolicies({
-    required TGetMfaPoliciesBody input,
-  }) async {
-    final fullUrl = '${config.baseUrl}/public/v1/query/get_mfa_policies';
-    final body = jsonEncode(input);
-    final stamp = await stamper.stamp(body);
-
-    return TSignedRequest(
-      body: body,
-      stamp: stamp,
-      url: fullUrl,
-    );
-  }
-
-  /// Get a single MFA policy for a user.
-  ///
-  /// Sign the provided `TGetMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_mfa_policy).
-  ///
-  /// See also: `stampGetMfaPolicy`.
-
-  Future<TGetMfaPolicyResponse> getMfaPolicy({
-    required TGetMfaPolicyBody input,
-  }) async {
-    return await request<TGetMfaPolicyBody, TGetMfaPolicyResponse>(
-        "/public/v1/query/get_mfa_policy",
-        input,
-        (json) => TGetMfaPolicyResponse.fromJson(json));
-  }
-
-  /// Produce a `SignedRequest` from `TGetMfaPolicyBody` by using the client's `stamp` function.
-  ///
-  /// See also: `GetMfaPolicy`.
-
-  Future<TSignedRequest> stampGetMfaPolicy({
-    required TGetMfaPolicyBody input,
-  }) async {
-    final fullUrl = '${config.baseUrl}/public/v1/query/get_mfa_policy';
-    final body = jsonEncode(input);
-    final stamp = await stamper.stamp(body);
-
-    return TSignedRequest(
-      body: body,
-      stamp: stamp,
-      url: fullUrl,
-    );
-  }
-
-  /// Get one session profile for an organization.
-  ///
-  /// Sign the provided `TGetSessionProfileBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_session_profile).
-  ///
-  /// See also: `stampGetSessionProfile`.
-
-  Future<TGetSessionProfileResponse> getSessionProfile({
-    required TGetSessionProfileBody input,
-  }) async {
-    return await request<TGetSessionProfileBody, TGetSessionProfileResponse>(
-        "/public/v1/query/get_session_profile",
-        input,
-        (json) => TGetSessionProfileResponse.fromJson(json));
-  }
-
-  /// Produce a `SignedRequest` from `TGetSessionProfileBody` by using the client's `stamp` function.
-  ///
-  /// See also: `GetSessionProfile`.
-
-  Future<TSignedRequest> stampGetSessionProfile({
-    required TGetSessionProfileBody input,
-  }) async {
-    final fullUrl = '${config.baseUrl}/public/v1/query/get_session_profile';
-    final body = jsonEncode(input);
-    final stamp = await stamper.stamp(body);
-
-    return TSignedRequest(
-      body: body,
-      stamp: stamp,
-      url: fullUrl,
-    );
-  }
-
-  /// Get all session profiles for an organization.
-  ///
-  /// Sign the provided `TGetSessionProfilesBody` with the client's `stamp` function and submit the request (POST /public/v1/query/get_session_profiles).
-  ///
-  /// See also: `stampGetSessionProfiles`.
-
-  Future<TGetSessionProfilesResponse> getSessionProfiles({
-    required TGetSessionProfilesBody input,
-  }) async {
-    return await request<TGetSessionProfilesBody, TGetSessionProfilesResponse>(
-        "/public/v1/query/get_session_profiles",
-        input,
-        (json) => TGetSessionProfilesResponse.fromJson(json));
-  }
-
-  /// Produce a `SignedRequest` from `TGetSessionProfilesBody` by using the client's `stamp` function.
-  ///
-  /// See also: `GetSessionProfiles`.
-
-  Future<TSignedRequest> stampGetSessionProfiles({
-    required TGetSessionProfilesBody input,
-  }) async {
-    final fullUrl = '${config.baseUrl}/public/v1/query/get_session_profiles';
-    final body = jsonEncode(input);
-    final stamp = await stamper.stamp(body);
-
-    return TSignedRequest(
-      body: body,
-      stamp: stamp,
-      url: fullUrl,
-    );
-  }
-
-  /// Create a new MFA policy for a user.
-  ///
-  /// Sign the provided `TCreateMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/create_mfa_policy).
-  ///
-  /// See also: `stampCreateMfaPolicy`.
-
-  Future<TCreateMfaPolicyResponse> createMfaPolicy({
-    required TCreateMfaPolicyBody input,
-  }) async {
-    final body = packActivityBody(
-      bodyJson: input.toJson(),
-      fallbackOrganizationId: input.organizationId ??
-          config.organizationId ??
-          (throw Exception(
-              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
-      activityType: 'ACTIVITY_TYPE_CREATE_MFA_POLICY',
-    );
-    return await request<Map<String, dynamic>, TCreateMfaPolicyResponse>(
-        "/public/v1/submit/create_mfa_policy",
-        body,
-        (json) => TCreateMfaPolicyResponse.fromJson(
-            transformActivityResponse(json, 'CreateMfaPolicy')));
-  }
-
-  /// Produce a `SignedRequest` from `TCreateMfaPolicyBody` by using the client's `stamp` function.
-  ///
-  /// See also: `CreateMfaPolicy`.
-
-  Future<TSignedRequest> stampCreateMfaPolicy({
-    required TCreateMfaPolicyBody input,
-  }) async {
-    final fullUrl = '${config.baseUrl}/public/v1/submit/create_mfa_policy';
-    final body = packActivityBody(
-      bodyJson: input.toJson(),
-      fallbackOrganizationId: input.organizationId ??
-          config.organizationId ??
-          (throw Exception(
-              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
-      activityType: 'ACTIVITY_TYPE_CREATE_MFA_POLICY',
-    );
-    final bodyJson = jsonEncode(body);
-    final stamp = await stamper.stamp(bodyJson);
-
-    return TSignedRequest(
-      body: bodyJson,
-      stamp: stamp,
-      url: fullUrl,
-    );
-  }
-
-  /// Update an MFA policy for a user.
-  ///
-  /// Sign the provided `TUpdateMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/update_mfa_policy).
-  ///
-  /// See also: `stampUpdateMfaPolicy`.
-
-  Future<TUpdateMfaPolicyResponse> updateMfaPolicy({
-    required TUpdateMfaPolicyBody input,
-  }) async {
-    final body = packActivityBody(
-      bodyJson: input.toJson(),
-      fallbackOrganizationId: input.organizationId ??
-          config.organizationId ??
-          (throw Exception(
-              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
-      activityType: 'ACTIVITY_TYPE_UPDATE_MFA_POLICY',
-    );
-    return await request<Map<String, dynamic>, TUpdateMfaPolicyResponse>(
-        "/public/v1/submit/update_mfa_policy",
-        body,
-        (json) => TUpdateMfaPolicyResponse.fromJson(
-            transformActivityResponse(json, 'UpdateMfaPolicy')));
-  }
-
-  /// Produce a `SignedRequest` from `TUpdateMfaPolicyBody` by using the client's `stamp` function.
-  ///
-  /// See also: `UpdateMfaPolicy`.
-
-  Future<TSignedRequest> stampUpdateMfaPolicy({
-    required TUpdateMfaPolicyBody input,
-  }) async {
-    final fullUrl = '${config.baseUrl}/public/v1/submit/update_mfa_policy';
-    final body = packActivityBody(
-      bodyJson: input.toJson(),
-      fallbackOrganizationId: input.organizationId ??
-          config.organizationId ??
-          (throw Exception(
-              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
-      activityType: 'ACTIVITY_TYPE_UPDATE_MFA_POLICY',
-    );
-    final bodyJson = jsonEncode(body);
-    final stamp = await stamper.stamp(bodyJson);
-
-    return TSignedRequest(
-      body: bodyJson,
-      stamp: stamp,
-      url: fullUrl,
-    );
-  }
-
-  /// Delete an MFA policy for a user.
-  ///
-  /// Sign the provided `TDeleteMfaPolicyBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/delete_mfa_policy).
-  ///
-  /// See also: `stampDeleteMfaPolicy`.
-
-  Future<TDeleteMfaPolicyResponse> deleteMfaPolicy({
-    required TDeleteMfaPolicyBody input,
-  }) async {
-    final body = packActivityBody(
-      bodyJson: input.toJson(),
-      fallbackOrganizationId: input.organizationId ??
-          config.organizationId ??
-          (throw Exception(
-              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
-      activityType: 'ACTIVITY_TYPE_DELETE_MFA_POLICY',
-    );
-    return await request<Map<String, dynamic>, TDeleteMfaPolicyResponse>(
-        "/public/v1/submit/delete_mfa_policy",
-        body,
-        (json) => TDeleteMfaPolicyResponse.fromJson(
-            transformActivityResponse(json, 'DeleteMfaPolicy')));
-  }
-
-  /// Produce a `SignedRequest` from `TDeleteMfaPolicyBody` by using the client's `stamp` function.
-  ///
-  /// See also: `DeleteMfaPolicy`.
-
-  Future<TSignedRequest> stampDeleteMfaPolicy({
-    required TDeleteMfaPolicyBody input,
-  }) async {
-    final fullUrl = '${config.baseUrl}/public/v1/submit/delete_mfa_policy';
-    final body = packActivityBody(
-      bodyJson: input.toJson(),
-      fallbackOrganizationId: input.organizationId ??
-          config.organizationId ??
-          (throw Exception(
-              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
-      activityType: 'ACTIVITY_TYPE_DELETE_MFA_POLICY',
-    );
-    final bodyJson = jsonEncode(body);
-    final stamp = await stamper.stamp(bodyJson);
-
-    return TSignedRequest(
-      body: bodyJson,
-      stamp: stamp,
-      url: fullUrl,
-    );
-  }
-
-  /// Create a new session profile for an organization.
-  ///
-  /// Sign the provided `TCreateSessionProfileBody` with the client's `stamp` function and submit the request (POST /public/v1/submit/create_session_profile).
-  ///
-  /// See also: `stampCreateSessionProfile`.
-
-  Future<TCreateSessionProfileResponse> createSessionProfile({
-    required TCreateSessionProfileBody input,
-  }) async {
-    final body = packActivityBody(
-      bodyJson: input.toJson(),
-      fallbackOrganizationId: input.organizationId ??
-          config.organizationId ??
-          (throw Exception(
-              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
-      activityType: 'ACTIVITY_TYPE_CREATE_SESSION_PROFILE',
-    );
-    return await request<Map<String, dynamic>, TCreateSessionProfileResponse>(
-        "/public/v1/submit/create_session_profile",
-        body,
-        (json) => TCreateSessionProfileResponse.fromJson(
-            transformActivityResponse(json, 'CreateSessionProfile')));
-  }
-
-  /// Produce a `SignedRequest` from `TCreateSessionProfileBody` by using the client's `stamp` function.
-  ///
-  /// See also: `CreateSessionProfile`.
-
-  Future<TSignedRequest> stampCreateSessionProfile({
-    required TCreateSessionProfileBody input,
-  }) async {
-    final fullUrl = '${config.baseUrl}/public/v1/submit/create_session_profile';
-    final body = packActivityBody(
-      bodyJson: input.toJson(),
-      fallbackOrganizationId: input.organizationId ??
-          config.organizationId ??
-          (throw Exception(
-              "Missing organization ID, please pass in a sub-organizationId or instantiate the client with one.")),
-      activityType: 'ACTIVITY_TYPE_CREATE_SESSION_PROFILE',
     );
     final bodyJson = jsonEncode(body);
     final stamp = await stamper.stamp(bodyJson);

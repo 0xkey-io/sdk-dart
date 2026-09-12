@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 
 import 'package:test/test.dart';
 import 'package:zeroxkey_http/__generated__/models.dart';
@@ -6,7 +9,8 @@ import 'package:zeroxkey_http/__generated__/public_api.client.dart';
 import 'package:zeroxkey_http/base.dart';
 
 const frozenOpenApiSha256 =
-    '5434f36777abe0672c53e8c0b5b1938147de78a235ddb938f5877b616e6644ad'; // gitleaks:allow
+    'b42fcfa9a9480c2d4148038b8d9112559132b11727c7f839e05cb2782e3350e2'; // gitleaks:allow
+const frozenServicesCommit = '096c1fec26bed3b3f8104b473b35903db76760bb';
 
 class _MockStamper implements TStamper {
   @override
@@ -29,7 +33,9 @@ void main() {
       }
     }
     expect(pin['openapi_sha256'], frozenOpenApiSha256);
-    expect(pin['services_commit']?.length, 40);
+    expect(pin['services_commit'], frozenServicesCommit);
+    final swagger = File('lib/swagger/public_api.swagger.json').readAsBytesSync();
+    expect(sha256.convert(swagger).toString(), frozenOpenApiSha256);
   });
 
   test('generated status includes AUTHENTICATORS_NEEDED', () {
