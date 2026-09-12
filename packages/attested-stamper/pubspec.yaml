@@ -1,0 +1,18 @@
+name: zeroxkey_attested_stamper
+description: Generate Turnkey-compatible attested identity stamps for ZeroXKey requests.
+version: 0.1.0
+repository: https://github.com/0xkey-io/sdk-dart
+
+environment:
+  sdk: ^3.6.1
+
+resolution: workspace
+
+dependencies:
+  crypto: ^3.0.6
+  elliptic: ^0.3.11
+  ecdsa: ^0.1.2
+  zeroxkey_encoding: ^0.1.1
+
+dev_dependencies:
+  test: ^1.25.0

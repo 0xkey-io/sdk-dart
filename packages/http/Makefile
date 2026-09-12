@@ -9,6 +9,7 @@ help:
 generate:
 	@echo "Generating HTTP client and types from Swagger specs..."
 	dart run lib/builder/codegen.dart
+	dart format lib/__generated__
 	@echo "✓ Generation complete!"
 
 test:

@@ -41,6 +41,10 @@ const Map<String, Set<String>> NULLABLE_OVERRIDES = {
   'v1Activity': {'result'},
 };
 
+const Map<String, String> ENUM_UNKNOWN_FALLBACKS = {
+  'v1ActivityStatus': 'activity_status_unspecified',
+};
+
 String _resolve(String rel) {
   final scriptDir = File.fromUri(Platform.script).parent.path;
   return File('$scriptDir/$rel').resolveSymbolicLinksSync();
@@ -72,7 +76,13 @@ String generateEnumHelpers(String enumName, List<dynamic> values) {
   for (int i = 0; i < values.length; i++) {
     b.writeln("    case '${values[i]}': return $enumName.${tokens[i]};");
   }
-  b.writeln("    default: throw ArgumentError('Unknown $enumName: \$value');");
+  final unknownFallback = ENUM_UNKNOWN_FALLBACKS[enumName];
+  if (unknownFallback == null) {
+    b.writeln(
+        "    default: throw ArgumentError('Unknown $enumName: \$value');");
+  } else {
+    b.writeln('    default: return $enumName.$unknownFallback;');
+  }
   b.writeln('  }');
   b.writeln('}');
   b.writeln();

@@ -201,8 +201,8 @@ extension SessionExtension on ZeroXKeyProvider {
         throw Exception("No session found in refresh response");
       }
 
-    // store the new session JWT
-    await SessionStorageManager.storeSession(
+      // store the new session JWT
+      await SessionStorageManager.storeSession(
         result?.session as String,
         sessionKey: key,
       );
