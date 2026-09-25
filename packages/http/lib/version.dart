@@ -1,1 +1,1 @@
-const VERSION = "zeroxkey-dart/0.1.0";
+const VERSION = "zeroxkey-dart/0.2.0";

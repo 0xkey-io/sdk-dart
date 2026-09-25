@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2 — 2026-09-26
+### Patch Changes
+- Updated dependencies: zeroxkey_http, zeroxkey_crypto, zeroxkey_encoding.
+
+
 ## 0.1.1
 - Complete the clean architecture: auth provider strategies (OTP/OAuth/Passkey),
   domain repositories + data mappers, and end-to-end use cases.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2 — 2026-09-26
+### Patch Changes
+- Updated dependencies: zeroxkey_crypto, zeroxkey_encoding, zeroxkey_http.
+
+
 ## 0.1.1
 - Delegate OTP/OAuth/Passkey and session flows to `zeroxkey_core` use cases.
 - Add `HiveSessionStore` and OAuth redirect handler adapters over core ports.
