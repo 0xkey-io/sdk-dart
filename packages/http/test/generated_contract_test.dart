@@ -8,8 +8,8 @@ import 'package:zeroxkey_http/__generated__/public_api.client.dart';
 import 'package:zeroxkey_http/base.dart';
 
 const frozenOpenApiSha256 =
-    'b42fcfa9a9480c2d4148038b8d9112559132b11727c7f839e05cb2782e3350e2'; // gitleaks:allow
-const frozenServicesCommit = '096c1fec26bed3b3f8104b473b35903db76760bb';
+    'cca6a179db09bb9ea1d01deabd0b9e7122f4dbc1f27735efdcf433700aee42e2'; // gitleaks:allow
+const frozenServicesCommit = '0eb6eb86a2ddb875552e97a33880d2c1c1eb4e4e';
 
 class _MockStamper implements TStamper {
   @override
@@ -61,5 +61,34 @@ void main() {
       stamper: _MockStamper(),
     );
     expect(client.getMfaStatus, isA<Function>());
+  });
+
+  test('generated identity models match the Turnkey-aligned contract', () {
+    final credential = externaldatav1Credential.fromJson({
+      'publicKey': '04deadbeef',
+      'type': 'CREDENTIAL_TYPE_LOGIN',
+      'sessionProfileId': 'session-profile-1',
+    });
+    expect(credential.toJson()['sessionProfileId'], 'session-profile-1');
+
+    final user = v1User.fromJson({
+      'userId': 'user-1',
+      'userName': 'Test User',
+      'authenticators': <Object>[],
+      'apiKeys': <Object>[],
+      'userTags': <Object>[],
+      'oauthProviders': <Object>[],
+      'createdAt': {'seconds': '0', 'nanos': '0'},
+      'updatedAt': {'seconds': '0', 'nanos': '0'},
+      'mfaPolicies': <Object>[],
+    });
+    expect(user.toJson()['mfaPolicies'], isEmpty);
+
+    expect(
+      v1AuthenticationType.values.any(
+        (value) => value.name == 'authentication_type_unspecified',
+      ),
+      isFalse,
+    );
   });
 }

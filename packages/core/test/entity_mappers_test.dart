@@ -16,6 +16,7 @@ void main() {
         apiKeys: const [],
         authenticators: const [],
         oauthProviders: const [],
+        mfaPolicies: const [],
         createdAt: ts,
         updatedAt: ts,
       );
