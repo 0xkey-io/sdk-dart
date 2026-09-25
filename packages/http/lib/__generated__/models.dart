@@ -1055,7 +1055,6 @@ dynamic v1ApiKeyCurveToJson(v1ApiKeyCurve value) {
 }
 
 enum v1AuthenticationType {
-  authentication_type_unspecified,
   authentication_type_email_otp,
   authentication_type_sms_otp,
   authentication_type_passkey,
@@ -1066,8 +1065,6 @@ enum v1AuthenticationType {
 
 v1AuthenticationType v1AuthenticationTypeFromJson(dynamic value) {
   switch (value) {
-    case 'AUTHENTICATION_TYPE_UNSPECIFIED':
-      return v1AuthenticationType.authentication_type_unspecified;
     case 'AUTHENTICATION_TYPE_EMAIL_OTP':
       return v1AuthenticationType.authentication_type_email_otp;
     case 'AUTHENTICATION_TYPE_SMS_OTP':
@@ -1087,8 +1084,6 @@ v1AuthenticationType v1AuthenticationTypeFromJson(dynamic value) {
 
 dynamic v1AuthenticationTypeToJson(v1AuthenticationType value) {
   switch (value) {
-    case v1AuthenticationType.authentication_type_unspecified:
-      return "AUTHENTICATION_TYPE_UNSPECIFIED";
     case v1AuthenticationType.authentication_type_email_otp:
       return "AUTHENTICATION_TYPE_EMAIL_OTP";
     case v1AuthenticationType.authentication_type_sms_otp:
@@ -2696,17 +2691,23 @@ class externaldatav1Credential {
   final String publicKey;
   final v1CredentialType type;
 
+  /// The session profile associated with this credential, if any. This field is only applicable for credentials of type CREDENTIAL_TYPE_LOGIN.
+  final String? sessionProfileId;
+
   const externaldatav1Credential({
     required this.publicKey,
     required this.type,
+    this.sessionProfileId,
   });
 
   factory externaldatav1Credential.fromJson(Map<String, dynamic> json) {
     final _publicKey = json['publicKey'] as String;
     final _type = v1CredentialTypeFromJson(json['type']);
+    final _sessionProfileId = json['sessionProfileId'] as String?;
     return externaldatav1Credential(
       publicKey: _publicKey,
       type: _type,
+      sessionProfileId: _sessionProfileId,
     );
   }
 
@@ -2714,6 +2715,9 @@ class externaldatav1Credential {
     final _json = <String, dynamic>{};
     _json['publicKey'] = publicKey;
     _json['type'] = v1CredentialTypeToJson(type);
+    if (sessionProfileId != null) {
+      _json['sessionProfileId'] = sessionProfileId;
+    }
     return _json;
   }
 }
@@ -25805,6 +25809,9 @@ class v1User {
   final externaldatav1Timestamp createdAt;
   final externaldatav1Timestamp updatedAt;
 
+  /// A list of MFA Policies that define multi-factor authentication requirements for this user.
+  final List<v1MfaPolicy> mfaPolicies;
+
   const v1User({
     required this.userId,
     required this.userName,
@@ -25816,6 +25823,7 @@ class v1User {
     required this.oauthProviders,
     required this.createdAt,
     required this.updatedAt,
+    required this.mfaPolicies,
   });
 
   factory v1User.fromJson(Map<String, dynamic> json) {
@@ -25838,6 +25846,9 @@ class v1User {
         .fromJson(json['createdAt'] as Map<String, dynamic>);
     final _updatedAt = externaldatav1Timestamp
         .fromJson(json['updatedAt'] as Map<String, dynamic>);
+    final _mfaPolicies = (json['mfaPolicies'] as List)
+        .map((e) => v1MfaPolicy.fromJson(e as Map<String, dynamic>))
+        .toList();
     return v1User(
       userId: _userId,
       userName: _userName,
@@ -25849,6 +25860,7 @@ class v1User {
       oauthProviders: _oauthProviders,
       createdAt: _createdAt,
       updatedAt: _updatedAt,
+      mfaPolicies: _mfaPolicies,
     );
   }
 
@@ -25868,6 +25880,7 @@ class v1User {
     _json['oauthProviders'] = oauthProviders.map((e) => e.toJson()).toList();
     _json['createdAt'] = createdAt.toJson();
     _json['updatedAt'] = updatedAt.toJson();
+    _json['mfaPolicies'] = mfaPolicies.map((e) => e.toJson()).toList();
     return _json;
   }
 }
