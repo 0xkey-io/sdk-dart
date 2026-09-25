@@ -1,6 +1,6 @@
 name: zeroxkey_api_key_stamper
 description: A Dart package for API stamping functionalities.
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/0xkey-io/sdk-dart
 
 environment:
@@ -15,7 +15,7 @@ dependencies:
   elliptic: ^0.3.11
   ecdsa: ^0.1.2
   zeroxkey_encoding: ^0.1.1
-  zeroxkey_crypto: ^0.1.0
+  zeroxkey_crypto: ^0.2.0
 
 dev_dependencies:
   flutter_test:

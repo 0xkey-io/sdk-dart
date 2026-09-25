@@ -1,5 +1,111 @@
 {
-  "created": "2026-06-24T00:00:00.000000",
-  "date": "2026-06-24",
-  "packages": []
+  "created": "2026-09-26T03:16:00.502837",
+  "date": "2026-09-26",
+  "packages": [
+    {
+      "name": "zeroxkey_attested_stamper",
+      "path": "packages/attested-stamper",
+      "fromVersion": "0.1.0",
+      "toVersion": "0.1.1",
+      "bump": "patch",
+      "changes": [
+        {
+          "title": "Turnkey-aligned identity contracts",
+          "bump": "patch",
+          "note": "Expose attested request stamping, session claims, MFA policy and session\nprofile clients, credential-to-profile binding, and the\n`AUTHENTICATORS_NEEDED` activity state.",
+          "changesetPath": ".changesets/20260926-turnkey-identity-contracts.md"
+        }
+      ]
+    },
+    {
+      "name": "zeroxkey_crypto",
+      "path": "packages/crypto",
+      "fromVersion": "0.1.0",
+      "toVersion": "0.2.0",
+      "bump": "minor",
+      "changes": [
+        {
+          "title": "Turnkey-aligned identity contracts",
+          "bump": "minor",
+          "note": "Expose attested request stamping, session claims, MFA policy and session\nprofile clients, credential-to-profile binding, and the\n`AUTHENTICATORS_NEEDED` activity state.",
+          "changesetPath": ".changesets/20260926-turnkey-identity-contracts.md"
+        }
+      ]
+    },
+    {
+      "name": "zeroxkey_http",
+      "path": "packages/http",
+      "fromVersion": "0.1.0",
+      "toVersion": "0.2.0",
+      "bump": "minor",
+      "changes": [
+        {
+          "title": "Turnkey-aligned identity contracts",
+          "bump": "minor",
+          "note": "Expose attested request stamping, session claims, MFA policy and session\nprofile clients, credential-to-profile binding, and the\n`AUTHENTICATORS_NEEDED` activity state.",
+          "changesetPath": ".changesets/20260926-turnkey-identity-contracts.md"
+        }
+      ]
+    },
+    {
+      "name": "zeroxkey_api_key_stamper",
+      "path": "packages/api-key-stamper",
+      "fromVersion": "0.1.0",
+      "toVersion": "0.1.1",
+      "bump": "patch",
+      "changes": [
+        {
+          "title": "Updated internal dependencies",
+          "bump": "patch",
+          "note": "Updated dependencies: zeroxkey_crypto.",
+          "changesetPath": ""
+        }
+      ]
+    },
+    {
+      "name": "zeroxkey_core",
+      "path": "packages/core",
+      "fromVersion": "0.1.1",
+      "toVersion": "0.1.2",
+      "bump": "patch",
+      "changes": [
+        {
+          "title": "Updated internal dependencies",
+          "bump": "patch",
+          "note": "Updated dependencies: zeroxkey_http, zeroxkey_crypto, zeroxkey_encoding.",
+          "changesetPath": ""
+        }
+      ]
+    },
+    {
+      "name": "zeroxkey_passkey_stamper",
+      "path": "packages/passkey-stamper",
+      "fromVersion": "0.1.0",
+      "toVersion": "0.1.1",
+      "bump": "patch",
+      "changes": [
+        {
+          "title": "Updated internal dependencies",
+          "bump": "patch",
+          "note": "Updated dependencies: zeroxkey_http, zeroxkey_encoding.",
+          "changesetPath": ""
+        }
+      ]
+    },
+    {
+      "name": "zeroxkey_sdk_flutter",
+      "path": "packages/sdk-flutter",
+      "fromVersion": "0.1.1",
+      "toVersion": "0.1.2",
+      "bump": "patch",
+      "changes": [
+        {
+          "title": "Updated internal dependencies",
+          "bump": "patch",
+          "note": "Updated dependencies: zeroxkey_crypto, zeroxkey_encoding, zeroxkey_http.",
+          "changesetPath": ""
+        }
+      ]
+    }
+  ]
 }
