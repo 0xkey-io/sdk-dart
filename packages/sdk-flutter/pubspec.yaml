@@ -1,6 +1,6 @@
 name: zeroxkey_sdk_flutter
 description: A complete SDK for building Flutter apps with ZeroXKey's packages
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/0xkey-io/sdk-dart
 
 environment:

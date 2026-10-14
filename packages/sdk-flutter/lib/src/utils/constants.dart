@@ -54,8 +54,8 @@ const MAX_SESSIONS = 15;
 
 const X_AUTH_URL = "https://x.com/i/oauth2/authorize";
 const DISCORD_AUTH_URL = "https://discord.com/oauth2/authorize";
-const ZEROXKEY_OAUTH_ORIGIN_URL = "https://oauth-origin.0xkey.com";
-const ZEROXKEY_OAUTH_REDIRECT_URL = "https://oauth-redirect.0xkey.com";
+const ZEROXKEY_OAUTH_ORIGIN_URL = "https://oauth-origin.0xkey.io";
+const ZEROXKEY_OAUTH_REDIRECT_URL = "https://oauth-redirect.0xkey.io/";
 const APPLE_AUTH_URL = "https://account.apple.com/auth/authorize";
 const APPLE_AUTH_SCRIPT_URL =
     "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
