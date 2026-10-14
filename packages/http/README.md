@@ -1,8 +1,8 @@
 # zeroxkey_http
 
-A lower-level, fully typed HTTP client for interacting with [ZeroXKey](https://zeroxkey.com) API.
+A lower-level, fully typed HTTP client for interacting with the [0xkey](https://0xkey.io) API.
 
-ZeroXKey API documentation lives here: https://docs.zeroxkey.com.
+0xkey API documentation lives here: https://docs.0xkey.io.
 
 Example usage:
 
