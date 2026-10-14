@@ -89,15 +89,15 @@ To configure Google OAuth, follow these steps:
 #### 1. Create a Google Web Client ID:
 
 - Go to [Google Cloud Console](https://console.cloud.google.com/).
-- Create a new OAuth client ID.
-- Set the authorized origin to:
+- Create a new OAuth client ID of type **Web application**.
+- Add this authorized redirect URI, byte for byte (including the `/` before `?`):
   ```
-  https://oauth-origin.0xkey.com
+  https://oauth-redirect.0xkey.io/?scheme=zeroxkey-flutter-demo
   ```
-- Set the authorized redirect URI to:
-  ```
-  https://oauth-redirect.0xkey.com?scheme=zeroxkey-flutter-demo
-  ```
+  The SDK opens the hosted origin page `https://oauth-origin.0xkey.io`, which
+  forwards to Google; Google then returns to the hosted relay above, which hands
+  the ID token back to the app through its scheme. No authorized JavaScript
+  origin is needed for this flow.
   > **Note**: If you change your app's scheme, you must update this link and your `.env` file with your new scheme
 
 #### 2. Set your Client ID in `.env`:
