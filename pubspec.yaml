@@ -7,17 +7,10 @@ environment:
   sdk: ">=3.6.0 <4.0.0"
 
 workspace:
-  # packages
-  - packages/api-key-stamper
-  - packages/core
-  - packages/crypto
-  - packages/encoding
-  - packages/http
-  - packages/passkey-stamper
+  # Security patch line for zeroxkey_sdk_flutter 0.1.x: only the Flutter SDK is
+  # in the workspace, so its zeroxkey_* dependencies resolve to the versions
+  # published on pub.dev, exactly as they do for apps on 0.1.0.
   - packages/sdk-flutter
-
-  # examples
-  - examples/flutter-demo-app
 
 dev_dependencies:
   melos: 7.1.1

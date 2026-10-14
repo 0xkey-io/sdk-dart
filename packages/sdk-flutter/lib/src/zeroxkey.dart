@@ -7,10 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:zeroxkey_api_key_stamper/zeroxkey_api_key_stamper.dart';
 import 'package:zeroxkey_core/zeroxkey_core.dart'
-    hide TimeoutException, SignatureFormat, AuthAction;
+    hide TimeoutException, SignatureFormat;
+import 'package:zeroxkey_crypto/zeroxkey_crypto.dart';
 import 'package:zeroxkey_passkey_stamper/zeroxkey_passkey_stamper.dart';
 import 'package:zeroxkey_http/zeroxkey_http.dart';
 import 'package:zeroxkey_sdk_flutter/src/internal/zeroxkey_helpers.dart';
+import 'package:zeroxkey_sdk_flutter/src/utils/client_signature.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:zeroxkey_sdk_flutter/src/utils/constants.dart';
 import 'package:zeroxkey_sdk_flutter/src/utils/types.dart';
@@ -18,8 +20,6 @@ import 'package:uuid/uuid.dart';
 
 import 'package:zeroxkey_sdk_flutter/src/internal/stamper.dart';
 import 'package:zeroxkey_sdk_flutter/src/internal/storage.dart';
-import 'package:zeroxkey_sdk_flutter/src/internal/hive_session_store.dart';
-import 'package:zeroxkey_sdk_flutter/src/internal/oauth_redirect_handler.dart';
 import 'package:crypto/crypto.dart';
 
 part 'zeroxkey_auth_proxy.dart';
@@ -47,9 +47,6 @@ class ZeroXKeyProvider with ChangeNotifier {
   final SecureStorageStamper secureStorageStamper = SecureStorageStamper();
   final Map<String, Timer> expiryTimers = {};
 
-  /// Session persistence via the core [SessionStore] port (Hive-backed).
-  final SessionStore _sessionStore = const HiveSessionStore();
-
   /// Composition root: owns the decorated transport (tracing/retry/timeout) and
   /// the repository/use-case graph that the public API delegates to.
   late final ZeroXKeyContainer _container;
@@ -61,8 +58,6 @@ class ZeroXKeyProvider with ChangeNotifier {
     _container = ZeroXKeyContainer(
       configuration: _mapConfiguration(),
       clientResolver: () => requireClient,
-      signer: secureStorageStamper,
-      keyStore: const SecureStorageKeyStore(),
     );
     _init();
   }
@@ -131,7 +126,7 @@ class ZeroXKeyProvider with ChangeNotifier {
 
   Future<void> _init() async {
     await _boot();
-    await HiveSessionStore.ensureInitialized();
+    await SessionStorageManager.init();
     await _initializeSessions();
   }
 

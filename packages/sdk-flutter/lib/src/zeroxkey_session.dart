@@ -55,7 +55,7 @@ extension SessionExtension on ZeroXKeyProvider {
     sessionKey ??= StorageKeys.DefaultSession.value;
 
     // we enforce a session limit
-    final existingSessionKeys = await _sessionStore.listSessionKeys();
+    final existingSessionKeys = await SessionStorageManager.listSessionKeys();
     if (existingSessionKeys.length >= MAX_SESSIONS) {
       throw Exception(
         'Maximum session limit of $MAX_SESSIONS reached. Please clear an existing session before creating a new one.',
@@ -71,7 +71,8 @@ extension SessionExtension on ZeroXKeyProvider {
     }
 
     // we store and parse the session JWT
-    await _sessionStore.storeSessionJwt(sessionJwt, sessionKey: sessionKey);
+    await SessionStorageManager.storeSession(sessionJwt,
+        sessionKey: sessionKey);
     final session = await SessionStorageManager.getSession(sessionKey);
     if (session == null) {
       throw Exception("Failed to store or parse session");
@@ -105,7 +106,7 @@ extension SessionExtension on ZeroXKeyProvider {
   /// Sets the active session by its key.
   /// [sessionKey] The key of the session to set as active.
   Future<void> setActiveSession({required String sessionKey}) async {
-    await _sessionStore.setActiveSessionKey(sessionKey);
+    await SessionStorageManager.setActiveSessionKey(sessionKey);
     final s = await SessionStorageManager.getSession(sessionKey);
 
     if (s == null) {
@@ -125,7 +126,7 @@ extension SessionExtension on ZeroXKeyProvider {
   /// Gets the key of the currently active session.
   /// Returns the active session key if it exists, otherwise `null`.
   Future<String?> getActiveSessionKey() async {
-    return await _sessionStore.getActiveSessionKey();
+    return await SessionStorageManager.getActiveSessionKey();
   }
 
   /// Gets a stored session by its key.
@@ -201,8 +202,9 @@ extension SessionExtension on ZeroXKeyProvider {
         throw Exception("No session found in refresh response");
       }
 
-    // store the new session JWT
-    await SessionStorageManager.storeSession(
+      // store the new session JWT
+      // TODO (Amir): Does this need to be the helper function?
+      await SessionStorageManager.storeSession(
         result?.session as String,
         sessionKey: key,
       );
@@ -269,7 +271,7 @@ extension SessionExtension on ZeroXKeyProvider {
     await deleteApiKeyPair(sessionToClear.publicKey);
 
     // remove the session from storage
-    await _sessionStore.clearSession(key);
+    await SessionStorageManager.clearSession(key);
 
     runtimeConfig?.onSessionCleared?.call(sessionToClear);
   }
@@ -281,7 +283,7 @@ extension SessionExtension on ZeroXKeyProvider {
   /// of associated API key pairs and invokes session cleared callbacks.
   /// If no sessions are found, the method returns without performing any operations.
   Future<void> clearAllSessions() async {
-    final sessionKeys = await _sessionStore.listSessionKeys();
+    final sessionKeys = await SessionStorageManager.listSessionKeys();
     if (sessionKeys.isEmpty) return;
 
     for (final key in sessionKeys) {

@@ -65,6 +65,8 @@ extension OAuthExtension on ZeroXKeyProvider {
           "App scheme is not configured. Please set `appScheme` in ZeroXKeyConfig.");
     }
 
+    final AppLinks appLinks = AppLinks();
+
     final targetPublicKey = publicKey ?? await createApiKeyPair();
     try {
       final nonce = sha256.convert(utf8.encode(targetPublicKey)).toString();
@@ -80,39 +82,87 @@ extension OAuthExtension on ZeroXKeyProvider {
           googleProvider?.secondaryClientIds ??
           const <String>[];
 
-      // Drive the browser/deep-link redirect through the core OAuthRedirectHandler
-      // port (Flutter implementation), then run login/signup via the core flow.
-      final redirectHandler = FlutterOAuthRedirectHandler(
-        appScheme: scheme,
-        nonce: nonce,
-      );
+      final oauthUrl = originUri! +
+          '?provider=${Uri.encodeComponent(providerName)}' +
+          '&clientId=${Uri.encodeComponent(googleClientId)}' +
+          '&redirectUri=${Uri.encodeComponent(resolvedRedirectUri)}' +
+          '&nonce=${Uri.encodeComponent(nonce)}';
 
-      final idToken = await redirectHandler.fetchOidcToken(
-        providerName: providerName,
-        primaryClientId: googleClientId,
-        secondaryClientIds: resolvedSecondaryClientIds,
-        originUri: originUri,
-        redirectUri: resolvedRedirectUri,
-      );
+      // we create a completer to wait for the authentication result
+      final Completer<void> authCompleter = Completer<void>();
 
-      if (onSuccess != null) {
-        onSuccess(
-            oidcToken: idToken,
-            publicKey: targetPublicKey,
-            providerName: providerName);
-      } else {
-        await loginOrSignUpWithOAuth(
-          oidcToken: idToken,
-          publicKey: targetPublicKey,
-          providerName: providerName,
-          sessionKey: sessionKey,
-          invalidateExisting: invalidateExisting,
-          createSubOrgParams: _buildOAuthCreateSubOrgParams(
-            oidcToken: idToken,
-            providerName: providerName,
-            secondaryClientIds: resolvedSecondaryClientIds,
+      // set up a subscription for deep links
+      StreamSubscription? subscription;
+      subscription = appLinks.uriLinkStream.listen((Uri? uri) async {
+        if (uri != null && uri.toString().startsWith(scheme)) {
+          // we parse query parameters from the URI
+          final idToken = uri.queryParameters['id_token'];
+
+          if (idToken != null) {
+            if (onSuccess != null) {
+              onSuccess(
+                  oidcToken: idToken,
+                  publicKey: targetPublicKey,
+                  providerName: providerName);
+            } else {
+              await loginOrSignUpWithOAuth(
+                oidcToken: idToken,
+                publicKey: targetPublicKey,
+                providerName: providerName,
+                sessionKey: sessionKey,
+                invalidateExisting: invalidateExisting,
+                createSubOrgParams: _buildOAuthCreateSubOrgParams(
+                  oidcToken: idToken,
+                  providerName: providerName,
+                  secondaryClientIds: resolvedSecondaryClientIds,
+                ),
+              );
+            }
+
+            // complete the auth process
+            // this runs the `whenComplete()` callback
+            if (!authCompleter.isCompleted) {
+              authCompleter.complete();
+            }
+          }
+        }
+      });
+
+      try {
+        final browser = _OAuthBrowser(
+          onBrowserClosed: () {
+            if (!authCompleter.isCompleted) {
+              subscription?.cancel();
+              authCompleter.complete();
+              return;
+            }
+          },
+        );
+
+        await browser.open(
+          url: WebUri(oauthUrl),
+          settings: ChromeSafariBrowserSettings(
+            showTitle: true,
+            toolbarBackgroundColor: Colors.white,
           ),
         );
+
+        // set a timeout for the authentication process
+        await authCompleter.future.timeout(
+          const Duration(minutes: 10),
+          onTimeout: () {
+            subscription?.cancel();
+            throw Exception('Authentication timed out');
+          },
+        );
+
+        await authCompleter.future.whenComplete(() async {
+          await browser.close();
+          subscription?.cancel();
+        });
+      } catch (e) {
+        subscription.cancel();
+        throw Exception('Google OAuth failed in browser: $e');
       }
     } catch (error) {
       await deleteUnusedKeyPairs();

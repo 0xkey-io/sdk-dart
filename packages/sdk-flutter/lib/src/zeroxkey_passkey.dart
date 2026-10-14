@@ -44,19 +44,25 @@ extension PasskeyExtension on ZeroXKeyProvider {
           apiBaseUrl: apiBaseUrl,
           passkeyStamperConfig: PasskeyStamperConfig(rpId: rpId));
 
-      final result = await _container.loginWithPasskeyUseCase.call(
-        client: passkeyClient,
-        publicKey: generatedPublicKey,
-        organizationId: organizationId,
-        expirationSeconds: expirationSeconds,
+      final loginResponse = await passkeyClient.stampLogin(
+        input: TStampLoginBody(
+          organizationId: organizationId,
+          publicKey: generatedPublicKey,
+          expirationSeconds: expirationSeconds,
+        ),
       );
 
+      final sessionToken = loginResponse.result?.session;
+      if (sessionToken == null) {
+        throw Exception('No session returned from stampLogin');
+      }
+
       await storeSession(
-        sessionJwt: result.sessionToken,
+        sessionJwt: sessionToken,
         sessionKey: sessionKey,
       );
 
-      return LoginWithPasskeyResult(sessionToken: result.sessionToken);
+      return LoginWithPasskeyResult(sessionToken: sessionToken);
     } catch (error) {
       deleteUnusedKeyPairs();
       throw Exception('Failed to login with passkey: $error');
