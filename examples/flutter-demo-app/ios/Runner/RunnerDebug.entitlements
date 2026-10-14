@@ -9,7 +9,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>webcredentials:localhost:25565?mode=developer</string>
-		<string>webcredentials:passkey.0xkey.com</string>
+		<string>webcredentials:example.example.com</string>
 	</array>
 </dict>
 </plist>

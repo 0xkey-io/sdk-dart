@@ -43,7 +43,7 @@ DISCORD_CLIENT_ID="YOUR_DISCORD_CLIENT_ID"
 
 ```
 
-You can find your `ORGANIZATION_ID` and `AUTH_PROXY_CONFIG_ID` from the [ZeroXKey Dashboard](https://app.zeroxkey.com).
+You can find your `ORGANIZATION_ID` and `AUTH_PROXY_CONFIG_ID` from the [0xkey Dashboard](https://app.0xkey.io).
 
 ## Running the Flutter App
 
@@ -74,7 +74,7 @@ Replace the bundled identifiers before shipping a production app:
 | iOS bundle ID | `io.0xkey.flutter-demo` | Update in `ios/Runner.xcodeproj` |
 | Android application ID | `io.0xkey.flutter_demo` | Update in `android/app/build.gradle` |
 | URL scheme | `zeroxkey-flutter-demo` | iOS `Info.plist` + Android intent filter |
-| Associated domain (Passkey) | `passkey.0xkey.com` | `RunnerDebug.entitlements` — replace with your RP ID domain |
+| Associated domain (Passkey) | `example.example.com` | `RunnerDebug.entitlements` — replace with your RP ID domain |
 
 This demo focuses on **Email/SMS OTP + Passkey**. OAuth buttons are disabled; OAuth configuration remains documented for future use.
 
@@ -108,7 +108,7 @@ In your project's `.env` file, add the following:
 GOOGLE_CLIENT_ID="<YOUR_GOOGLE_WEB_CLIENT_ID>"
 ```
 
-For more information on how to setup OAuth in ZeroXKey powered Flutter apps, visit [our docs!](https://docs.zeroxkey.com/sdks/flutter)
+For more information on how to setup OAuth in ZeroXKey powered Flutter apps, visit [our docs!](https://docs.0xkey.io)
 
 ## Passkey Configuration (optional)
 
