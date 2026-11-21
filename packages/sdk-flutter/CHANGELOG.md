@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.2 - Fix
+- Email and SMS OTP login works against the production API again. `verifyOtp`
+  and `loginOrSignUpWithOtp` failed locally before sending the code, because
+  `zeroxkey_crypto` 0.1.0 checked the OTP target bundle against the wrong
+  production key. This version requires `zeroxkey_crypto` ^0.1.1, which checks
+  it against the signer enclave's signing key. Passkey login is unaffected.
+- OTP login still goes through Auth Proxy `otp_login_v2` and does not depend
+  on Attested `stamp_login`. Nothing else changes.
+
 ## 0.1.1 - Security
 - Default the hosted OAuth pages to `https://oauth-origin.0xkey.io` and
   `https://oauth-redirect.0xkey.io/` instead of `oauth-origin.0xkey.com` and

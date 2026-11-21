@@ -224,7 +224,5 @@ final PRODUCTION_TLS_FETCHER_ENCRYPT_PUBLIC_KEY =
 final PRODUCTION_ON_RAMP_CREDENTIALS_ENCRYPTION_PUBLIC_KEY =
     "02336ebd7e929ef64b87c776b72540255b4c7b41579a24b1e68fb060daa873f9f6";
 
-// Legacy aliases kept for historical constant names in bundle verification helpers.
+// Legacy alias kept for historical constant names in bundle verification helpers.
 final PRODUCTION_SIGNER_PUBLIC_KEY = PRODUCTION_SIGNER_SIGN_PUBLIC_KEY;
-final PRODUCTION_TLS_FETCHER_SIGN_PUBLIC_KEY =
-    PRODUCTION_TLS_FETCHER_ENCRYPT_PUBLIC_KEY;
