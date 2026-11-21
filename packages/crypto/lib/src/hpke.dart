@@ -23,24 +23,6 @@ class HpkeScheduleInfo {
   final Uint8List ivInfo;
 }
 
-/// Resolve the HPKE key-schedule info used during AES key / nonce derivation.
-///
-/// - `null` or `'turnkey_hpke'`: legacy compatibility branch. It uses fixed
-///   [AES_KEY_INFO] / [IV_INFO] constants and matches bundles produced without
-///   an explicit [hpkeInfo] (or with the legacy identifier). Kept so the SDK
-///   can still decrypt older ciphertext during migration. The `'turnkey_hpke'`
-///   token is a functional wire-protocol domain-separation identifier, NOT
-///   branding — it must stay byte-for-byte in sync with the reference crypto
-///   implementation to preserve ciphertext interoperability.
-/// - Any other string (e.g. `'0xkey_hpke'`): 0xkey-native branch. It performs
-///   the full RFC 9180 labeled key schedule with the supplied info string as
-///   the HPKE `info` parameter. This is the branch the 0xkey enclave and all
-///   native SDK helpers use.
-///
-/// 0xkey-native flows MUST pass `hpkeInfo: zeroxkeyHpkeInfo` explicitly;
-/// relying on the default is reserved for legacy interop only. Once no live
-/// legacy ciphertext needs to be read, this branch can be removed in a
-/// breaking release.
 HpkeScheduleInfo getHpkeScheduleInfo([String? hpkeInfo]) {
   if (hpkeInfo == null || hpkeInfo == 'turnkey_hpke') {
     return HpkeScheduleInfo(aesKeyInfo: AES_KEY_INFO, ivInfo: IV_INFO);
