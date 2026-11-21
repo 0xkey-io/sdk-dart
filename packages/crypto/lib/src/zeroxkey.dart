@@ -320,8 +320,9 @@ Future<String> encryptPrivateKeyToBundle({
 /// - [otpCode]: The OTP code entered by the user.
 /// - [otpEncryptionTargetBundle]: The signed target encryption bundle returned from initOtp.
 /// - [publicKey]: Compressed hex public key to embed in the encrypted bundle.
-/// - [dangerouslyOverrideSignerPublicKey]: Optional override for the TLS fetcher signing key
-///   used to verify the bundle signature. Only use in test/preprod environments.
+/// - [dangerouslyOverrideSignerPublicKey]: Optional override for the signer enclave's quorum
+///   signing key used to verify the bundle signature. Defaults to
+///   [PRODUCTION_SIGNER_SIGN_PUBLIC_KEY]; set it only for non-production deployments.
 ///
 /// Returns:
 /// - A [Future<String>] resolving to the encrypted OTP bundle string.
@@ -341,8 +342,8 @@ Future<String> encryptOtpCodeToBundle({
     enclaveQuorumPublic: parsedBundle['enclaveQuorumPublic'],
     publicSignature: parsedBundle['dataSignature'],
     signedData: parsedBundle['data'],
-    dangerouslyOverrideSignerPublicKey: dangerouslyOverrideSignerPublicKey ??
-        PRODUCTION_TLS_FETCHER_SIGN_PUBLIC_KEY,
+    dangerouslyOverrideSignerPublicKey:
+        dangerouslyOverrideSignerPublicKey ?? PRODUCTION_SIGNER_SIGN_PUBLIC_KEY,
   );
   if (!verified) {
     throw Exception(
