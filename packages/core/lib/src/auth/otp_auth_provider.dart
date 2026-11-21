@@ -16,15 +16,21 @@ class OtpAuthProvider implements AuthProvider {
   final KeyStore _keyStore;
   final ClientSignatureCodec _signatures;
 
+  /// Signer enclave key that must have signed the OTP encryption target
+  /// bundle. `null` uses the production signer key.
+  final String? _signerPublicKeyOverride;
+
   OtpAuthProvider({
     required AuthRepository auth,
     required Signer signer,
     required KeyStore keyStore,
     ClientSignatureCodec signatures = const ClientSignatureCodec(),
+    String? signerPublicKeyOverride,
   })  : _auth = auth,
         _signer = signer,
         _keyStore = keyStore,
-        _signatures = signatures;
+        _signatures = signatures,
+        _signerPublicKeyOverride = signerPublicKeyOverride;
 
   @override
   String get name => 'otp';
@@ -58,6 +64,7 @@ class OtpAuthProvider implements AuthProvider {
         otpCode: otpCode,
         otpEncryptionTargetBundle: otpEncryptionTargetBundle,
         publicKey: resolvedPublicKey,
+        dangerouslyOverrideSignerPublicKey: _signerPublicKeyOverride,
       );
       final res = await _auth.verifyOtp(
         otpId: otpId,

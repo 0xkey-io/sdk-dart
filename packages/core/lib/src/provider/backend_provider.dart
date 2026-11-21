@@ -23,8 +23,8 @@ abstract class BackendProvider {
   String get hpkeInfo;
 
   /// Optional override for the enclave signer public key used to verify import/
-  /// export bundles. `null` defers to the crypto package's production constants,
-  /// preserving current behavior exactly.
+  /// export bundles and OTP encryption target bundles. `null` defers to the
+  /// crypto package's production constants.
   String? get signerPublicKeyOverride;
 }
 

@@ -76,6 +76,7 @@ class ZeroXKeyProvider with ChangeNotifier {
             config.authProxyBaseUrl ?? 'https://authproxy.0xkey.io',
         authProxyConfigId: config.authProxyConfigId,
         organizationId: config.organizationId,
+        signerPublicKeyOverride: config.signerPublicKeyOverride,
       ),
     );
   }
