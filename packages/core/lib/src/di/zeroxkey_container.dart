@@ -117,6 +117,7 @@ class ZeroXKeyContainer {
       auth: auth,
       signer: signer,
       keyStore: keyStore,
+      signerPublicKeyOverride: configuration.backend.signerPublicKeyOverride,
     );
     final oauthProvider = OAuthAuthProvider(auth: auth);
     final passkeyProvider = PasskeyAuthProvider(passkey: passkey);

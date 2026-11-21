@@ -249,6 +249,11 @@ class ZeroXKeyConfig {
   final AuthConfig? authConfig;
   final PasskeyConfig? passkeyConfig;
 
+  /// Signer enclave public key (uncompressed hex) that OTP encryption target
+  /// bundles must be signed by. Leave `null` for the 0xkey production API; set
+  /// it only when pointing [apiBaseUrl] at another deployment.
+  final String? signerPublicKeyOverride;
+
   final String? appScheme;
 
   final void Function(Session session)? onSessionCreated;
@@ -267,6 +272,7 @@ class ZeroXKeyConfig {
     this.authConfig =
         const AuthConfig(), // Default to empty config. We set a default inside this object so we need to do this.
     this.passkeyConfig,
+    this.signerPublicKeyOverride,
     this.appScheme,
     this.onSessionCreated,
     this.onSessionSelected,
