@@ -60,6 +60,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Check that no upstream brand name is left outside the allowlist
+        run: dart run tool/check_brand_residue.dart
+
       - name: Run codegen
         run: make -C packages/http generate
 

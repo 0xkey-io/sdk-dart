@@ -63,7 +63,8 @@ void main() {
     expect(client.getMfaStatus, isA<Function>());
   });
 
-  test('generated identity models match the Turnkey-aligned contract', () {
+  test('generated identity models expose the MFA and session-profile fields',
+      () {
     final credential = externaldatav1Credential.fromJson({
       'publicKey': '04deadbeef',
       'type': 'CREDENTIAL_TYPE_LOGIN',

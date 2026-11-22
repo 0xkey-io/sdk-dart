@@ -10,7 +10,7 @@
       "bump": "patch",
       "changes": [
         {
-          "title": "Turnkey-aligned identity contracts",
+          "title": "Attested identity contracts",
           "bump": "patch",
           "note": "Expose attested request stamping, session claims, MFA policy and session\nprofile clients, credential-to-profile binding, and the\n`AUTHENTICATORS_NEEDED` activity state.",
           "changesetPath": ".changesets/20260926-turnkey-identity-contracts.md"
@@ -25,7 +25,7 @@
       "bump": "minor",
       "changes": [
         {
-          "title": "Turnkey-aligned identity contracts",
+          "title": "Attested identity contracts",
           "bump": "minor",
           "note": "Expose attested request stamping, session claims, MFA policy and session\nprofile clients, credential-to-profile binding, and the\n`AUTHENTICATORS_NEEDED` activity state.",
           "changesetPath": ".changesets/20260926-turnkey-identity-contracts.md"
@@ -40,7 +40,7 @@
       "bump": "minor",
       "changes": [
         {
-          "title": "Turnkey-aligned identity contracts",
+          "title": "Attested identity contracts",
           "bump": "minor",
           "note": "Expose attested request stamping, session claims, MFA policy and session\nprofile clients, credential-to-profile binding, and the\n`AUTHENTICATORS_NEEDED` activity state.",
           "changesetPath": ".changesets/20260926-turnkey-identity-contracts.md"

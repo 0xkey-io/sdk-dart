@@ -1,7 +1,7 @@
 # ZeroXKey Attested Stamper
 
-This package generates Turnkey-compatible attested identity stamps for
-ZeroXKey requests. It supports P-256 OIDC and verification-token schemes and
+This package generates attested identity stamps (the `X-Stamp-Attested`
+header) for ZeroXKey requests. It supports P-256 OIDC and verification-token schemes and
 signs the exact request body with a caller-provided or generated P-256 key.
 
 ## Usage
