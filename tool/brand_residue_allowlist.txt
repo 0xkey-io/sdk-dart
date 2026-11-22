@@ -1,0 +1,18 @@
+# Places that may name the upstream SDK. Checked by tool/check_brand_residue.dart; anything else
+# that names it fails CI. Keep entries narrow and say why.
+#
+#   <path glob>               whole file
+#   <path glob> :: <regex>    only the matching lines
+
+# Wire value: the legacy upstream HPKE info string accepted by the compatibility branch.
+packages/crypto/lib/src/hpke.dart :: 'turnkey_hpke'
+
+# Released CHANGELOG entries and the record of the 2026-09-26 release are history and are not
+# rewritten; the changeset path names a file that release consumed.
+packages/attested-stamper/CHANGELOG.md :: ^- (Prepare the reviewed|Add) Turnkey-compatible
+.changesets/_current_release.json :: "changesetPath": "\.changesets/20260926-turnkey-identity-contracts\.md"
+
+# Generated from the services OpenAPI source (`ump` alias description). Temporary: remove once the
+# services source text is neutral and `make -C packages/http generate` has been re-run.
+packages/http/lib/swagger/public_api.swagger.json :: alias `ump` maps to
+packages/http/lib/__generated__/models.dart :: alias `ump` maps to

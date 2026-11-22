@@ -30,10 +30,9 @@ class _ThrowingSigner implements AttestedSigner {
 
 void main() {
   test('matches shared vector and normalizes only high-S signatures', () async {
-    final raw =
-        File('../../testdata/turnkey-attested-stamp.json').readAsBytesSync();
+    final raw = File('../../testdata/attested-stamp.json').readAsBytesSync();
     expect(sha256.convert(raw).toString(),
-        '54d576e55629ae628df762354af91f630d5ce275aa3d5b78423dfe78f4d5661a'); // gitleaks:allow
+        'f338449187cd7719874e86fb2b9d9f9a8c03bb08c7e6f0a590a07168d21873b6'); // gitleaks:allow
     final vector = jsonDecode(utf8.decode(raw)) as Map<String, dynamic>;
     final signer = _FixedSigner(
       vector['publicKey'] as String,
